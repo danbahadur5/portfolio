@@ -290,54 +290,6 @@ export function AboutPage() {
         </div>
       </section>
 
-      {/* Experience */}
-      <section className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl font-bold mb-4">Professional Experience</h2>
-            <p className="text-muted-foreground">
-              My journey through different roles and companies
-            </p>
-          </motion.div>
-
-          <div className="space-y-8">
-            {experience.map((job: any, index: number) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.2 }}
-              >
-                <Card className="relative overflow-hidden">
-                  <CardContent className="p-8">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                      <div>
-                        <h3 className="text-xl font-semibold">
-                          {job.position}
-                        </h3>
-                        <p className="text-lg text-primary">{job.company}</p>
-                      </div>
-                      <Badge variant="secondary" className="w-fit">
-                        {job.duration}
-                      </Badge>
-                    </div>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {job.description}
-                    </p>
-                  </CardContent>
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-primary/50" />
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
