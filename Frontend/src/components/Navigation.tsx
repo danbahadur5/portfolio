@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
 import {
   Menu,
   X,
@@ -35,6 +36,30 @@ export function Navigation({ currentPage, onPageChange }: NavigationProps) {
   const [scrolled, setScrolled] = useState(false);
   const { theme, setTheme, themes } = useTheme();
   const navigate = useNavigate();
+  const [contactInfo, setContactInfo] = useState<any>(null);
+  const [aboutInfo, setAboutInfo] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const backend = import.meta.env.VITE_BACKEND_URL;
+        const [contactRes, aboutRes] = await Promise.all([
+          axios.get(`${backend}/api/getcontact`),
+          axios.get(`${backend}/api/getabout`),
+        ]);
+
+        if (contactRes.data.contacts && contactRes.data.contacts.length > 0) {
+          setContactInfo(contactRes.data.contacts[0]);
+        }
+        if (aboutRes.data.about && aboutRes.data.about.length > 0) {
+          setAboutInfo(aboutRes.data.about[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch nav data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   // keep both an id (used by onPageChange/currentPage) and a path (used by Link/navigate)
   const isLoggedIn = (() => {
@@ -59,12 +84,31 @@ export function Navigation({ currentPage, onPageChange }: NavigationProps) {
   const socialLinks = [
     {
       icon: Github,
-      href: "https://github.com/danbahadur2060",
+      href: contactInfo?.github_profile || "https://github.com/danbahadur2060",
       label: "GitHub",
     },
-    { icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" },
-    { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
+    {
+      icon: Linkedin,
+      href: contactInfo?.linkedin_profile || "https://linkedin.com",
+      label: "LinkedIn",
+    },
+    {
+      icon: Twitter,
+      href: contactInfo?.twitter_profile || "https://twitter.com",
+      label: "Twitter",
+    },
   ];
+
+  const getInitials = (name: string) => {
+    if (!name) return "DBB";
+    const parts = name.trim().split(" ");
+    if (parts.length === 1) return parts[0].substring(0, 3).toUpperCase();
+    return (parts[0][0] + (parts[1]?.[0] || "") + (parts[2]?.[0] || "")).toUpperCase().substring(0, 3);
+  };
+  
+  const logoText = getInitials(aboutInfo?.name);
+  const firstLetter = logoText.charAt(0);
+  const restLetters = logoText.slice(1);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -105,7 +149,7 @@ export function Navigation({ currentPage, onPageChange }: NavigationProps) {
               className="relative font-bold text-xl text-foreground group"
             >
               <span className="relative cursor-pointer z-10">
-                <span className="text-red-500">D</span>BB
+                <span className="text-red-500">{firstLetter}</span>{restLetters}
               </span>
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-lg -z-10"
@@ -181,11 +225,11 @@ export function Navigation({ currentPage, onPageChange }: NavigationProps) {
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 bg-red-800">
                   {themes.map((themeOption) => (
                     <DropdownMenuItem
                       key={themeOption.value}
-                      onClick={() => setTheme(themeOption.value)}
+                      onSelect={() => setTheme(themeOption.value)}
                       className={`cursor-pointer ${
                         theme === themeOption.value ? "bg-accent" : ""
                       }`}

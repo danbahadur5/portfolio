@@ -30,4 +30,4 @@ export {
   useFormState,
   useWatch
 };
-//# sourceMappingURL=react-hook-form@7__55__0.js.map
+//# sourceMappingURL=react-hook-form.js.map

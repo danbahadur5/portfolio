@@ -97,7 +97,22 @@ router.delete("/deleteabout/:id", auth, deleteAbout);
 
 // http://localhost:3000/api/createabout
 // http://localhost:3000/api/getabout
-// http://localhost:3000/api/updateabout/:id
+import {
+  createMessage,
+  deleteMessage,
+  getMessages,
+} from "../Controllers/Message.controllers.js";
+
+// ... existing imports ...
+
+// Message routes
+router.post("/sendmessage", createMessage);
+router.get("/getmessages", auth, getMessages);
+router.delete("/deletemessage/:id", auth, deleteMessage);
+
+// http://localhost:3000/api/sendmessage
+// http://localhost:3000/api/getmessages
+// http://localhost:3000/api/deletemessage/:id
 // http://localhost:3000/api/deleteabout/:id
 
 // HomeContent routes

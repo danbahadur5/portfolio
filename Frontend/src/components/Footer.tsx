@@ -1,7 +1,26 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Link } from "react-router-dom";
+import axios from "axios";
+
 const Footer = () => {
+  const [contactInfo, setContactInfo] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchContact = async () => {
+      try {
+        const backend = import.meta.env.VITE_BACKEND_URL;
+        const response = await axios.get(`${backend}/api/getcontact`);
+        if (response.data.contacts && response.data.contacts.length > 0) {
+          setContactInfo(response.data.contacts[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch contact info:", error);
+      }
+    };
+    fetchContact();
+  }, []);
+
   let menu = ["/", "/projects", "/about", "/blog", "/contact"];
   return (
     <div>
@@ -41,7 +60,9 @@ const Footer = () => {
               <ul className="space-y-2">
                 <li>
                   <a
-                    href="https://github.com/danbahadur2060"
+                    href={contactInfo?.github_profile || "https://github.com/danbahadur2060"}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     GitHub
@@ -49,7 +70,9 @@ const Footer = () => {
                 </li>
                 <li>
                   <a
-                    href="https://linkedin.com/danbahadur2060"
+                    href={contactInfo?.linkedin_profile || "https://linkedin.com/danbahadur2060"}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     LinkedIn
@@ -57,7 +80,9 @@ const Footer = () => {
                 </li>
                 <li>
                   <a
-                    href="https://twitter.com/danbahadur2060"
+                    href={contactInfo?.twitter_profile || "https://twitter.com/danbahadur2060"}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Twitter
@@ -65,7 +90,7 @@ const Footer = () => {
                 </li>
                 <li>
                   <a
-                    href="mailto:danbahadur2060@gmail.com"
+                    href={`mailto:${contactInfo?.email || "danbahadur2060@gmail.com"}`}
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Email

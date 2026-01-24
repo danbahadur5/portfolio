@@ -8,6 +8,8 @@ import { Input } from "../ui/input";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import axios from "axios";
 
+import { LoadingSpinner } from "../LoadingSpinner";
+
 interface BlogPost {
   id: string;
   title: string;
@@ -23,20 +25,32 @@ export function BlogPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [fetchedData, setFetchedData] = useState<BlogPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchBlogData = async () => {
       try {
+        setIsLoading(true);
         const backend = import.meta.env.VITE_BACKEND_URL;
         const response = await axios.get(`${backend}/api/getblogs`);
         setFetchedData(response?.data.blogs || []);
       } catch (error) {
         console.error("Failed to fetch blogs:", error);
         setFetchedData([]);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchBlogData();
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen pt-16 flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   // Extract unique tags safely
   const allTags = Array.from(

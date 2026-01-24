@@ -81,7 +81,13 @@ export const getHomeContent = async (req, res) => {
 export const updateHomeContent = async (req, res) => {
     try {
         const {id} = req.params;
-        const {name,location,position,summary,profile_pic,description} = req.body;
+        let {name,location,position,summary,profile_pic,description} = req.body;
+
+        if (req.file) {
+            const save_image = await uploadImage(req.file, {folder: "profile_pics"});
+            profile_pic = save_image.secure_url;
+        }
+
         if(!name || !position || !summary){
             return res.status(400).json({
                 success: false,

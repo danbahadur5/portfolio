@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Mail, MapPin, Calendar, Code, Coffee, Music } from "lucide-react";
 import { Button } from "../ui/button";
@@ -8,12 +8,86 @@ import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { Progress } from "../ui/progress";
 import { contentData } from "../../data/content";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { LoadingSpinner } from "../LoadingSpinner";
+
 interface AboutPageProps {
   onPageChange: (page: string) => void;
 }
 
 export function AboutPage() {
-  const { personal, skills, experience } = contentData;
+  const [isLoading, setIsLoading] = useState(true);
+  const [aboutData, setAboutData] = useState<any>(null);
+  const [skillsData, setSkillsData] = useState<string[]>([]);
+  const [experienceData, setExperienceData] = useState<any[]>([]);
+  const { skills: defaultSkills, experience: defaultExperience } = contentData;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const backend = import.meta.env.VITE_BACKEND_URL;
+        const [aboutRes, skillRes, expRes] = await Promise.all([
+          axios.get(`${backend}/api/getabout`),
+          axios.get(`${backend}/api/getskill`),
+          axios.get(`${backend}/api/getexperience`),
+        ]);
+
+        if (aboutRes.data.about && aboutRes.data.about.length > 0) {
+          setAboutData(aboutRes.data.about[0]);
+        }
+
+        if (skillRes.data.skill && skillRes.data.skill.length > 0) {
+          const s = skillRes.data.skill[0];
+          const combinedSkills = [
+            ...(s.technical || []),
+            ...(s.frameworks || []),
+            ...(s.languages || []),
+          ];
+          setSkillsData([...new Set(combinedSkills)]);
+        }
+
+        if (expRes.data.experience && Array.isArray(expRes.data.experience)) {
+           setExperienceData(expRes.data.experience);
+        }
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen pt-16 flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  const personal = aboutData
+    ? {
+        name: aboutData.name,
+        location: aboutData.location,
+        email: aboutData.email,
+        avatar: aboutData.profileImage,
+        description: aboutData.bio,
+        position: aboutData.title,
+      }
+    : contentData.personal;
+
+  const skills = skillsData.length > 0 ? skillsData : defaultSkills;
+
+  const experience = experienceData.length > 0 
+    ? experienceData.map((exp) => ({
+        company: exp.company,
+        position: exp.title,
+        duration: `${new Date(exp.start_date).getFullYear()} - ${exp.end_date ? new Date(exp.end_date).getFullYear() : 'Present'}`,
+        description: exp.description,
+      }))
+    : defaultExperience || [];
 
   const interests = [
     {
@@ -96,27 +170,26 @@ export function AboutPage() {
             >
               <div>
                 <h2 className="text-2xl font-bold mb-4">My Story</h2>
-                <div className="space-y-4 text-muted-foreground leading-relaxed">
-                  <p>
-                    I'm a passionate full-stack developer with over 3 years of
-                    experience creating digital solutions that make a
-                    difference. My journey started with a curiosity about how
-                    websites work, and it quickly evolved into a love for
-                    building complex applications that solve real-world
-                    problems.
-                  </p>
-                  <p>
-                    I believe in writing clean, maintainable code and creating
-                    user experiences that are both beautiful and functional.
-                    When I'm not coding, you can find me exploring new
-                    technologies, contributing to open source projects, or
-                    sharing knowledge with the developer community.
-                  </p>
-                  <p>
-                    I'm always excited to take on new challenges and work with
-                    teams that share my passion for creating exceptional digital
-                    experiences.
-                  </p>
+                <div className="space-y-4 text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                  {personal.description || (
+                    <>
+                      <p>
+                        I'm a passionate full-stack developer with over 3 years of
+                        experience creating digital solutions that make a
+                        difference. My journey started with a curiosity about how
+                        websites work, and it quickly evolved into a love for
+                        building complex applications that solve real-world
+                        problems.
+                      </p>
+                      <p>
+                        I believe in writing clean, maintainable code and creating
+                        user experiences that are both beautiful and functional.
+                        When I'm not coding, you can find me exploring new
+                        technologies, contributing to open source projects, or
+                        sharing knowledge with the developer community.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -233,9 +306,9 @@ export function AboutPage() {
           </motion.div>
 
           <div className="space-y-8">
-            {/* {experience.map((job, index) => (
+            {experience.map((job: any, index: number) => (
               <motion.div
-                key={job.company}
+                key={index}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -261,7 +334,7 @@ export function AboutPage() {
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-primary/50" />
                 </Card>
               </motion.div>
-            ))} */}
+            ))}
           </div>
         </div>
       </section>

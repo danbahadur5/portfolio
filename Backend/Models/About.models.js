@@ -5,7 +5,7 @@ const AboutSchema = new mongoose.Schema({
         type:String,
         required:[true,"Name is required"],
         minlength:[3,"About name must be at least 3 characters"],
-        maxlength:[20,"About name must be at most 20 characters"],
+        maxlength:[100,"About name must be at most 100 characters"],
         trim:true,
     },
     email:{
@@ -20,14 +20,14 @@ const AboutSchema = new mongoose.Schema({
         type:String,
         required:[true,"Profession title is required"],
         minlength:[3,"Profession title must be at least 3 characters"],
-        maxlength:[50,"Profession title must be at most 50 characters"],
+        maxlength:[100,"Profession title must be at most 100 characters"],
         trim:true,
     },
     bio:{
         type:String,
         required:[true,"Biography is required"],
         minlength:[10,"Biography must be at least 10 characters"],
-        maxlength:[200,"Biography must be at most 200 characters"],
+        maxlength:[5000,"Biography must be at most 5000 characters"],
         trim:true,
     },
     location:{

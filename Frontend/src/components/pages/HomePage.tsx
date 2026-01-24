@@ -22,6 +22,7 @@ import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { contentData } from "../../data/content";
 import { projectsData } from "../../data/projects";
 import { blogData } from "../../data/blog";
+import { LoadingSpinner } from "../LoadingSpinner";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
@@ -50,6 +51,7 @@ export function HomePage() {
     skills: [],
   };
 
+  const [isLoading, setIsLoading] = useState(true);
   const [personal, setPersonal] = useState<Personal>(
     (contentData?.personal as Personal) ?? defaultPersonal
   );
@@ -60,46 +62,50 @@ export function HomePage() {
   const [projectResponse, setProjectResponse] = useState<any>({});
   const [blogResponse, setBlogResponse] = useState<any>({});
 
+  const [contactInfo, setContactInfo] = useState<any>(null);
+
   useEffect(() => {
     let mounted = true;
     const controller = new AbortController();
     const fetchContent = async () => {
       try {
+        setIsLoading(true);
         const backend = import.meta.env.VITE_BACKEND_URL;
         if (!backend) {
           console.warn("VITE_BACKEND_URL is not defined — skipping fetch");
+          setIsLoading(false);
           return;
         }
 
         const res = await axios.get(
           `${backend.replace(/\/$/, "")}/api/gethomecontent`,
-          {
-            signal: controller.signal,
-            timeout: 10000, // optional timeout
-          }
+          { signal: controller.signal }
         );
         const projectResponse = await axios.get(
           `${backend.replace(/\/$/, "")}/api/getallproject`,
-          {
-            signal: controller.signal,
-            timeout: 10000, // optional timeout
-          }
+          { signal: controller.signal }
         );
-        if (mounted) setProjectResponse(projectResponse?.data?.projects ?? {});
         const blogResponse = await axios.get(
           `${backend.replace(/\/$/, "")}/api/getblogs`,
-          {
-            signal: controller.signal,
-            timeout: 10000, // optional timeout
-          }
+          { signal: controller.signal }
         );
-        if (mounted) setBlogResponse(blogResponse?.data?.blogs ?? {});
+        const contactResponse = await axios.get(
+            `${backend.replace(/\/$/, "")}/api/getcontact`,
+            { signal: controller.signal }
+        );
 
-        // console.log("home content:", res?.data);
-        const newHome = res?.data?.homeContent?.[0];
-        if (mounted && newHome) {
-          setPersonal((prev: Personal) => ({ ...prev, ...newHome }));
-          if (Array.isArray(newHome.skills)) setSkills(newHome.skills);
+        if (mounted) {
+          setProjectResponse(projectResponse?.data?.projects ?? {});
+          setBlogResponse(blogResponse?.data?.blogs ?? {});
+          if (contactResponse?.data?.contacts?.[0]) {
+            setContactInfo(contactResponse.data.contacts[0]);
+          }
+
+          const newHome = res?.data?.homeContent?.[0];
+          if (newHome) {
+            setPersonal((prev: Personal) => ({ ...prev, ...newHome }));
+            if (Array.isArray(newHome.skills)) setSkills(newHome.skills);
+          }
         }
       } catch (err: any) {
         if (axios.isCancel?.(err) || err?.name === "CanceledError") {
@@ -107,6 +113,8 @@ export function HomePage() {
         } else {
           console.error("Failed to fetch home content:", err);
         }
+      } finally {
+        if (mounted) setIsLoading(false);
       }
     };
 
@@ -144,19 +152,19 @@ export function HomePage() {
   const socialLinks = [
     {
       icon: Github,
-      href: personal?.social?.github ?? "#",
+      href: contactInfo?.github_profile || personal?.social?.github || "#",
       label: "GitHub",
       color: "hover:text-purple-500",
     },
     {
       icon: Linkedin,
-      href: personal?.social?.linkedin ?? "#",
+      href: contactInfo?.linkedin_profile || personal?.social?.linkedin || "#",
       label: "LinkedIn",
       color: "hover:text-blue-500",
     },
     {
       icon: Twitter,
-      href: personal?.social?.twitter ?? "#",
+      href: contactInfo?.twitter_profile || personal?.social?.twitter || "#",
       label: "Twitter",
       color: "hover:text-sky-500",
     },
@@ -190,6 +198,14 @@ export function HomePage() {
   ];
 
   const nameParts = personal?.name ? personal.name.split(" ") : ["", ""];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">

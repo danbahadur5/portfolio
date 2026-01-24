@@ -32,8 +32,10 @@ import {
   FileText,
   Palette,
   LogOut,
+  Home,
 } from "lucide-react";
 import { AboutSection } from "./dashboard/AboutSection";
+import { HomeContentSection } from "./dashboard/HomeContentSection";
 import { ProjectsSection } from "./dashboard/ProjectsSection";
 import { SkillsSection } from "./dashboard/SkillsSection";
 import { ExperienceSection } from "./dashboard/ExperienceSection";
@@ -128,6 +130,12 @@ const menuItems = [
     title: "Dashboard",
     icon: LayoutDashboard,
     description: "Overview and analytics",
+  },
+  {
+    id: "home",
+    title: "Home Content",
+    icon: Home,
+    description: "Home page content",
   },
   {
     id: "about",
@@ -225,6 +233,8 @@ export function PortfolioDashboard() {
     switch (activeSection) {
       case "dashboard":
         return <DashboardOverview />;
+      case "home":
+        return <HomeContentSection />;
       case "about":
         return <AboutSection />;
       case "projects":

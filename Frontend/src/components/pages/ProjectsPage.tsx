@@ -17,22 +17,24 @@ export function ProjectsPage() {
   const [selectedTech, setSelectedTech] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name'>('newest');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [projects, setProjects] = useState<any[]>([]);
 
   // const { projects } = projectsData;
 const  fetchProjects = async()=>{
   const backend = import.meta.env.VITE_BACKEND_URL
+    setIsLoading(true);
     await axios.get(`${backend}/api/getallproject`). then((res)=>{
           setProjects(res.data.projects);
         }).catch((err)=>{
-          toast.error(err.response.data.message);
-        })
+          toast.error(err.response?.data?.message || "Error fetching projects");
+        }).finally(() => {
+          setIsLoading(false);
+        });
       }
   useEffect(() => { 
   fetchProjects();
-  console.log(projects);
-  }, [projects.length]);
+  }, []);
   
   // Get unique categories and technologies
   const categories = ['All', ...Array.from(new Set(projects.map(p => p.category)))];
@@ -68,11 +70,19 @@ const  fetchProjects = async()=>{
   }, [projects, searchTerm, selectedCategory, selectedTech, sortBy]);
 
   const handleSearch = (term: string) => {
-    setIsLoading(true);
+    // setIsLoading(true); // Don't trigger full page loader for search
     setSearchTerm(term);
     // Simulate loading delay for better UX
-    setTimeout(() => setIsLoading(false), 300);
+    // setTimeout(() => setIsLoading(false), 300);
   };
+
+  if (isLoading && projects.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">

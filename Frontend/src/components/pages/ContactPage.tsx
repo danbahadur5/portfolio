@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Mail,
@@ -16,7 +16,8 @@ import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Badge } from "../ui/badge";
 import { LoadingSpinner } from "../LoadingSpinner";
-import { useForm } from "react-hook-form@7.55.0";
+import { useForm } from "react-hook-form";
+import axios from "axios";
 
 interface FormData {
   name: string;
@@ -32,6 +33,9 @@ export function ContactPage() {
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
+  const [contactInfo, setContactInfo] = useState<any>(null);
+  const [aboutInfo, setAboutInfo] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const {
     register,
@@ -40,17 +44,41 @@ export function ContactPage() {
     reset,
   } = useForm<FormData>();
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const backend = import.meta.env.VITE_BACKEND_URL;
+        const [contactRes, aboutRes] = await Promise.all([
+          axios.get(`${backend}/api/getcontact`),
+          axios.get(`${backend}/api/getabout`),
+        ]);
+
+        if (contactRes.data.contacts && contactRes.data.contacts.length > 0) {
+          setContactInfo(contactRes.data.contacts[0]);
+        }
+        if (aboutRes.data.about && aboutRes.data.about.length > 0) {
+          setAboutInfo(aboutRes.data.about[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch contact info:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
     try {
-      console.log("Form data:", data);
+      const backend = import.meta.env.VITE_BACKEND_URL;
+      await axios.post(`${backend}/api/sendmessage`, data);
       setSubmitStatus("success");
       reset();
     } catch (error) {
+      console.error("Failed to send message:", error);
       setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);
@@ -58,27 +86,38 @@ export function ContactPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen pt-16 flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
   const contactMethods = [
     {
       icon: Mail,
       title: "Email",
-      value: "danbahadur2060@gmail.com",
+      value: contactInfo?.email || "danbahadur2060@gmail.com",
       description: "Send me an email anytime",
       color: "text-blue-500",
+      href: `mailto:${contactInfo?.email || "danbahadur2060@gmail.com"}`,
     },
     {
       icon: Phone,
       title: "Phone",
-      value: "9712345678",
+      value: contactInfo?.phone || "9712345678",
       description: "Call me during business hours",
       color: "text-green-500",
+      href: `tel:${contactInfo?.phone || "9712345678"}`,
     },
     {
       icon: MapPin,
       title: "Location",
-      value: "Ramkot, Kathmandu",
+      value: aboutInfo?.location || "Ramkot, Kathmandu",
       description: "Available for local meetings",
       color: "text-purple-500",
+      href: "#",
     },
   ];
 
@@ -169,7 +208,12 @@ export function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-medium">{method.title}</h3>
-                      <p className="text-foreground mb-1">{method.value}</p>
+                      <a
+                        href={method.href}
+                        className="text-foreground mb-1 hover:underline block"
+                      >
+                        {method.value}
+                      </a>
                       <p className="text-sm text-muted-foreground">
                         {method.description}
                       </p>

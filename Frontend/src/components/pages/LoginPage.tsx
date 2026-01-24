@@ -98,18 +98,6 @@ export default function LoginForm() {
       }
     };
 
-  const passwordStrength = (pw: string) => {
-    // Very lightweight strength: 0-3
-    let score = 0;
-    if (pw.length >= 8) score++;
-    if (/[A-Z]/.test(pw) && /[0-9]/.test(pw)) score++;
-    if (/[^A-Za-z0-9]/.test(pw)) score++;
-    return score; // 0..3
-  };
-
-  const strengthLabel = (score: number) =>
-    ["Very weak", "Weak", "Good", "Strong"][Math.max(0, score)];
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // mark all fields touched so validation messages show if invalid
@@ -166,8 +154,6 @@ export default function LoginForm() {
       setLoading(false);
     }
   };
-
-  const pwScore = passwordStrength(formData.password);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
@@ -228,16 +214,12 @@ export default function LoginForm() {
                   className={`mt-2 ${errors.email ? "border-red-500" : ""}`}
                 />
                 <div className="flex items-center justify-between mt-1">
-                  {errors.email ? (
+                  {errors.email && (
                     <p
                       id="email-error"
                       className="text-red-500 text-sm flex items-center gap-1"
                     >
                       <AlertCircle size={14} /> {errors.email}
-                    </p>
-                  ) : (
-                    <p id="email-help" className="text-gray-400 text-xs">
-                      We'll never share your email.
                     </p>
                   )}
                 </div>
@@ -282,35 +264,7 @@ export default function LoginForm() {
                 </div>
 
                 <div className="mt-2">
-                  {/* password strength indicator */}
                   <div className="flex items-center justify-between">
-                    <div className="w-3/4">
-                      <div className="h-2 bg-gray-200 rounded overflow-hidden">
-                        <div
-                          style={{
-                            width: `${(pwScore / 3) * 100}%`,
-                          }}
-                          className={`h-2 rounded ${
-                            pwScore === 0
-                              ? "bg-red-400"
-                              : pwScore === 1
-                              ? "bg-orange-400"
-                              : pwScore === 2
-                              ? "bg-yellow-400"
-                              : "bg-green-500"
-                          }`}
-                        />
-                      </div>
-                      <p
-                        id="password-help"
-                        className="text-xs text-gray-400 mt-1"
-                      >
-                        {formData.password
-                          ? `${strengthLabel(pwScore)} password`
-                          : "Use 8+ characters for a strong password."}
-                      </p>
-                    </div>
-
                     {errors.password && (
                       <p
                         id="password-error"

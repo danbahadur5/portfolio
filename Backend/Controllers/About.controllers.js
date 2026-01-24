@@ -58,6 +58,14 @@ export const createAbout = async (req, res) => {
       about,
     });
   } catch (error) {
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map(val => val.message);
+      return res.status(400).json({
+        success: false,
+        message: messages.join(", "),
+        error: error.message
+      });
+   }
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -132,6 +140,14 @@ export const updateAbout = async (req, res) => {
       about,
     });
   } catch (error) {
+    if (error.name === "ValidationError") {
+       const messages = Object.values(error.errors).map(val => val.message);
+       return res.status(400).json({
+         success: false,
+         message: messages.join(", "),
+         error: error.message
+       });
+    }
     res.status(500).json({
       success: false,
       message: "Internal server error",
