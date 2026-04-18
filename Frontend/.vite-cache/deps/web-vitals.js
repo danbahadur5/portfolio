@@ -1,242 +1,264 @@
-//#region node_modules/web-vitals/dist/web-vitals.js
+import {
+  __publicField
+} from "./chunk-DC5AMYBS.js";
+
+// node_modules/web-vitals/dist/web-vitals.js
 var e = -1;
-var t = (t) => {
-	addEventListener("pageshow", (n) => {
-		n.persisted && (e = n.timeStamp, t(n));
-	}, !0);
-}, n = (e, t, n, i) => {
-	let s, o;
-	return (r) => {
-		t.value >= 0 && (r || i) && (o = t.value - (s ?? 0), (o || void 0 === s) && (s = t.value, t.delta = o, t.rating = ((e, t) => e > t[1] ? "poor" : e > t[0] ? "needs-improvement" : "good")(t.value, n), e(t)));
-	};
-}, i = (e) => {
-	requestAnimationFrame(() => requestAnimationFrame(e));
-}, s = () => {
-	const e = performance.getEntriesByType("navigation")[0];
-	if (e && e.responseStart > 0 && e.responseStart < performance.now()) return e;
-}, o = () => s()?.activationStart ?? 0, r = (t, n = -1) => {
-	const i = s();
-	let r = "navigate";
-	e >= 0 ? r = "back-forward-cache" : i && (document.prerendering || o() > 0 ? r = "prerender" : document.wasDiscarded ? r = "restore" : i.type && (r = i.type.replace(/_/g, "-")));
-	return {
-		name: t,
-		value: n,
-		rating: "good",
-		delta: 0,
-		entries: [],
-		id: `v5-${Date.now()}-${Math.floor(8999999999999 * Math.random()) + 0xe8d4a51000}`,
-		navigationType: r
-	};
-}, c = /* @__PURE__ */ new WeakMap();
-function a(e, t) {
-	return c.get(e) || c.set(e, new t()), c.get(e);
+var t = (t2) => {
+  addEventListener("pageshow", (n2) => {
+    n2.persisted && (e = n2.timeStamp, t2(n2));
+  }, true);
+};
+var n = (e2, t2, n2, i2) => {
+  let s2, o2;
+  return (r2) => {
+    t2.value >= 0 && (r2 || i2) && (o2 = t2.value - (s2 ?? 0), (o2 || void 0 === s2) && (s2 = t2.value, t2.delta = o2, t2.rating = ((e3, t3) => e3 > t3[1] ? "poor" : e3 > t3[0] ? "needs-improvement" : "good")(t2.value, n2), e2(t2)));
+  };
+};
+var i = (e2) => {
+  requestAnimationFrame(() => requestAnimationFrame(e2));
+};
+var s = () => {
+  const e2 = performance.getEntriesByType("navigation")[0];
+  if (e2 && e2.responseStart > 0 && e2.responseStart < performance.now()) return e2;
+};
+var o = () => {
+  var _a;
+  return ((_a = s()) == null ? void 0 : _a.activationStart) ?? 0;
+};
+var r = (t2, n2 = -1) => {
+  const i2 = s();
+  let r2 = "navigate";
+  e >= 0 ? r2 = "back-forward-cache" : i2 && (document.prerendering || o() > 0 ? r2 = "prerender" : document.wasDiscarded ? r2 = "restore" : i2.type && (r2 = i2.type.replace(/_/g, "-")));
+  return { name: t2, value: n2, rating: "good", delta: 0, entries: [], id: `v5-${Date.now()}-${Math.floor(8999999999999 * Math.random()) + 1e12}`, navigationType: r2 };
+};
+var c = /* @__PURE__ */ new WeakMap();
+function a(e2, t2) {
+  return c.get(e2) || c.set(e2, new t2()), c.get(e2);
 }
 var d = class {
-	t;
-	i = 0;
-	o = [];
-	h(e) {
-		if (e.hadRecentInput) return;
-		const t = this.o[0], n = this.o.at(-1);
-		this.i && t && n && e.startTime - n.startTime < 1e3 && e.startTime - t.startTime < 5e3 ? (this.i += e.value, this.o.push(e)) : (this.i = e.value, this.o = [e]), this.t?.(e);
-	}
+  constructor() {
+    __publicField(this, "t");
+    __publicField(this, "i", 0);
+    __publicField(this, "o", []);
+  }
+  h(e2) {
+    var _a;
+    if (e2.hadRecentInput) return;
+    const t2 = this.o[0], n2 = this.o.at(-1);
+    this.i && t2 && n2 && e2.startTime - n2.startTime < 1e3 && e2.startTime - t2.startTime < 5e3 ? (this.i += e2.value, this.o.push(e2)) : (this.i = e2.value, this.o = [e2]), (_a = this.t) == null ? void 0 : _a.call(this, e2);
+  }
 };
-var h = (e, t, n = {}) => {
-	try {
-		if (PerformanceObserver.supportedEntryTypes.includes(e)) {
-			const i = new PerformanceObserver((e) => {
-				queueMicrotask(() => {
-					t(e.getEntries());
-				});
-			});
-			return i.observe({
-				type: e,
-				buffered: !0,
-				...n
-			}), i;
-		}
-	} catch {}
-}, f = (e) => {
-	let t = !1;
-	return () => {
-		t || (e(), t = !0);
-	};
+var h = (e2, t2, n2 = {}) => {
+  try {
+    if (PerformanceObserver.supportedEntryTypes.includes(e2)) {
+      const i2 = new PerformanceObserver((e3) => {
+        queueMicrotask(() => {
+          t2(e3.getEntries());
+        });
+      });
+      return i2.observe({ type: e2, buffered: true, ...n2 }), i2;
+    }
+  } catch {
+  }
+};
+var f = (e2) => {
+  let t2 = false;
+  return () => {
+    t2 || (e2(), t2 = true);
+  };
 };
 var l = -1;
-var u = /* @__PURE__ */ new Set(), m = () => "hidden" !== document.visibilityState || document.prerendering ? Infinity : 0, g = (e) => {
-	if ("hidden" === document.visibilityState) {
-		if ("visibilitychange" === e.type) for (const e of u) e();
-		isFinite(l) || (l = "visibilitychange" === e.type ? e.timeStamp : 0, removeEventListener("prerenderingchange", g, !0));
-	}
-}, p = () => {
-	if (l < 0) {
-		const e = o();
-		l = (document.prerendering ? void 0 : globalThis.performance.getEntriesByType("visibility-state").find((t) => "hidden" === t.name && t.startTime >= e)?.startTime) ?? m(), addEventListener("visibilitychange", g, !0), addEventListener("prerenderingchange", g, !0), t(() => {
-			setTimeout(() => {
-				l = m();
-			});
-		});
-	}
-	return {
-		get firstHiddenTime() {
-			return l;
-		},
-		onHidden(e) {
-			u.add(e);
-		}
-	};
-}, v = (e) => {
-	document.prerendering ? addEventListener("prerenderingchange", e, !0) : e();
-}, y = [1800, 3e3], T = (e, s = {}) => {
-	v(() => {
-		const c = p();
-		let a, d = r("FCP");
-		const f = h("paint", (e) => {
-			for (const t of e) "first-contentful-paint" === t.name && (f.disconnect(), t.startTime < c.firstHiddenTime && (d.value = Math.max(t.startTime - o(), 0), d.entries.push(t), a(!0)));
-		});
-		f && (a = n(e, d, y, s.reportAllChanges), t((t) => {
-			d = r("FCP"), a = n(e, d, y, s.reportAllChanges), i(() => {
-				d.value = performance.now() - t.timeStamp, a(!0);
-			});
-		}));
-	});
-}, E = [.1, .25], b = (e, s = {}) => {
-	const o = p();
-	T(f(() => {
-		let c, f = r("CLS", 0);
-		const l = a(s, d), u = (e) => {
-			for (const t of e) l.h(t);
-			l.i > f.value && (f.value = l.i, f.entries = l.o, c());
-		}, m = h("layout-shift", u);
-		m && (c = n(e, f, E, s.reportAllChanges), o.onHidden(() => {
-			u(m.takeRecords()), c(!0);
-		}), t(() => {
-			l.i = 0, f = r("CLS", 0), c = n(e, f, E, s.reportAllChanges), i(c);
-		}), setTimeout(c));
-	}));
+var u = /* @__PURE__ */ new Set();
+var m = () => "hidden" !== document.visibilityState || document.prerendering ? 1 / 0 : 0;
+var g = (e2) => {
+  if ("hidden" === document.visibilityState) {
+    if ("visibilitychange" === e2.type) for (const e3 of u) e3();
+    isFinite(l) || (l = "visibilitychange" === e2.type ? e2.timeStamp : 0, removeEventListener("prerenderingchange", g, true));
+  }
 };
-var L = 0, P = Infinity, _ = 0;
-var M = (e) => {
-	for (const t of e) t.interactionId && (P = Math.min(P, t.interactionId), _ = Math.max(_, t.interactionId), L = _ ? (_ - P) / 7 + 1 : 0);
+var p = () => {
+  var _a;
+  if (l < 0) {
+    const e2 = o(), n2 = document.prerendering ? void 0 : (_a = globalThis.performance.getEntriesByType("visibility-state").find((t2) => "hidden" === t2.name && t2.startTime >= e2)) == null ? void 0 : _a.startTime;
+    l = n2 ?? m(), addEventListener("visibilitychange", g, true), addEventListener("prerenderingchange", g, true), t(() => {
+      setTimeout(() => {
+        l = m();
+      });
+    });
+  }
+  return { get firstHiddenTime() {
+    return l;
+  }, onHidden(e2) {
+    u.add(e2);
+  } };
+};
+var v = (e2) => {
+  document.prerendering ? addEventListener("prerenderingchange", e2, true) : e2();
+};
+var y = [1800, 3e3];
+var T = (e2, s2 = {}) => {
+  v(() => {
+    const c2 = p();
+    let a2, d2 = r("FCP");
+    const f2 = h("paint", (e3) => {
+      for (const t2 of e3) "first-contentful-paint" === t2.name && (f2.disconnect(), t2.startTime < c2.firstHiddenTime && (d2.value = Math.max(t2.startTime - o(), 0), d2.entries.push(t2), a2(true)));
+    });
+    f2 && (a2 = n(e2, d2, y, s2.reportAllChanges), t((t2) => {
+      d2 = r("FCP"), a2 = n(e2, d2, y, s2.reportAllChanges), i(() => {
+        d2.value = performance.now() - t2.timeStamp, a2(true);
+      });
+    }));
+  });
+};
+var E = [0.1, 0.25];
+var b = (e2, s2 = {}) => {
+  const o2 = p();
+  T(f(() => {
+    let c2, f2 = r("CLS", 0);
+    const l2 = a(s2, d), u2 = (e3) => {
+      for (const t2 of e3) l2.h(t2);
+      l2.i > f2.value && (f2.value = l2.i, f2.entries = l2.o, c2());
+    }, m2 = h("layout-shift", u2);
+    m2 && (c2 = n(e2, f2, E, s2.reportAllChanges), o2.onHidden(() => {
+      u2(m2.takeRecords()), c2(true);
+    }), t(() => {
+      l2.i = 0, f2 = r("CLS", 0), c2 = n(e2, f2, E, s2.reportAllChanges), i(c2);
+    }), setTimeout(c2));
+  }));
+};
+var L = 0;
+var P = 1 / 0;
+var _ = 0;
+var M = (e2) => {
+  for (const t2 of e2) t2.interactionId && (P = Math.min(P, t2.interactionId), _ = Math.max(_, t2.interactionId), L = _ ? (_ - P) / 7 + 1 : 0);
 };
 var w;
-var C = () => w ? L : performance.interactionCount ?? 0, I = () => {
-	"interactionCount" in performance || w || (w = h("event", M, { durationThreshold: 0 }));
+var C = () => w ? L : performance.interactionCount ?? 0;
+var I = () => {
+  "interactionCount" in performance || w || (w = h("event", M, { durationThreshold: 0 }));
 };
 var F = 0;
 var k = class {
-	l = [];
-	u = /* @__PURE__ */ new Map();
-	m;
-	p;
-	v() {
-		F = C(), this.l.length = 0, this.u.clear();
-	}
-	T() {
-		const e = Math.min(this.l.length - 1, Math.floor((C() - F) / 50));
-		return this.l[e];
-	}
-	h(e) {
-		if (this.m?.(e), !e.interactionId && "first-input" !== e.entryType) return;
-		const t = this.l.at(-1);
-		let n = this.u.get(e.interactionId);
-		if (n || this.l.length < 10 || e.duration > t.L) {
-			if (n ? e.duration > n.L ? (n.entries = [e], n.L = e.duration) : e.duration === n.L && e.startTime === n.entries[0].startTime && n.entries.push(e) : (n = {
-				id: e.interactionId,
-				entries: [e],
-				L: e.duration
-			}, this.u.set(n.id, n), this.l.push(n)), this.l.sort((e, t) => t.L - e.L), this.l.length > 10) {
-				const e = this.l.splice(10);
-				for (const t of e) this.u.delete(t.id);
-			}
-			this.p?.(n);
-		}
-	}
+  constructor() {
+    __publicField(this, "l", []);
+    __publicField(this, "u", /* @__PURE__ */ new Map());
+    __publicField(this, "m");
+    __publicField(this, "p");
+  }
+  v() {
+    F = C(), this.l.length = 0, this.u.clear();
+  }
+  T() {
+    const e2 = Math.min(this.l.length - 1, Math.floor((C() - F) / 50));
+    return this.l[e2];
+  }
+  h(e2) {
+    var _a, _b;
+    if ((_a = this.m) == null ? void 0 : _a.call(this, e2), !e2.interactionId && "first-input" !== e2.entryType) return;
+    const t2 = this.l.at(-1);
+    let n2 = this.u.get(e2.interactionId);
+    if (n2 || this.l.length < 10 || e2.duration > t2.L) {
+      if (n2 ? e2.duration > n2.L ? (n2.entries = [e2], n2.L = e2.duration) : e2.duration === n2.L && e2.startTime === n2.entries[0].startTime && n2.entries.push(e2) : (n2 = { id: e2.interactionId, entries: [e2], L: e2.duration }, this.u.set(n2.id, n2), this.l.push(n2)), this.l.sort((e3, t3) => t3.L - e3.L), this.l.length > 10) {
+        const e3 = this.l.splice(10);
+        for (const t3 of e3) this.u.delete(t3.id);
+      }
+      (_b = this.p) == null ? void 0 : _b.call(this, n2);
+    }
+  }
 };
-var A = (e) => {
-	const t = globalThis.requestIdleCallback || setTimeout, n = globalThis.cancelIdleCallback || clearTimeout;
-	if ("hidden" === document.visibilityState) e();
-	else {
-		const i = f(e);
-		let s = -1;
-		const o = () => {
-			n(s), i();
-		};
-		addEventListener("visibilitychange", o, {
-			once: !0,
-			capture: !0
-		}), s = t(() => {
-			removeEventListener("visibilitychange", o, { capture: !0 }), i();
-		});
-	}
-}, B = [200, 500], S = (e, i = {}) => {
-	if (!globalThis.PerformanceEventTiming || !("interactionId" in PerformanceEventTiming.prototype)) return;
-	const s = p();
-	v(() => {
-		I();
-		let o, c = r("INP");
-		const d = a(i, k), f = (e) => {
-			A(() => {
-				for (const t of e) d.h(t);
-				const t = d.T();
-				t && t.L !== c.value && (c.value = t.L, c.entries = t.entries, o());
-			});
-		}, l = h("event", f, { durationThreshold: i.durationThreshold ?? 40 });
-		o = n(e, c, B, i.reportAllChanges), l && (l.observe({
-			type: "first-input",
-			buffered: !0
-		}), s.onHidden(() => {
-			f(l.takeRecords()), o(!0);
-		}), t(() => {
-			d.v(), c = r("INP"), o = n(e, c, B, i.reportAllChanges);
-		}));
-	});
+var A = (e2) => {
+  const t2 = globalThis.requestIdleCallback || setTimeout, n2 = globalThis.cancelIdleCallback || clearTimeout;
+  if ("hidden" === document.visibilityState) e2();
+  else {
+    const i2 = f(e2);
+    let s2 = -1;
+    const o2 = () => {
+      n2(s2), i2();
+    };
+    addEventListener("visibilitychange", o2, { once: true, capture: true }), s2 = t2(() => {
+      removeEventListener("visibilitychange", o2, { capture: true }), i2();
+    });
+  }
+};
+var B = [200, 500];
+var S = (e2, i2 = {}) => {
+  if (!globalThis.PerformanceEventTiming || !("interactionId" in PerformanceEventTiming.prototype)) return;
+  const s2 = p();
+  v(() => {
+    I();
+    let o2, c2 = r("INP");
+    const d2 = a(i2, k), f2 = (e3) => {
+      A(() => {
+        for (const t3 of e3) d2.h(t3);
+        const t2 = d2.T();
+        t2 && t2.L !== c2.value && (c2.value = t2.L, c2.entries = t2.entries, o2());
+      });
+    }, l2 = h("event", f2, { durationThreshold: i2.durationThreshold ?? 40 });
+    o2 = n(e2, c2, B, i2.reportAllChanges), l2 && (l2.observe({ type: "first-input", buffered: true }), s2.onHidden(() => {
+      f2(l2.takeRecords()), o2(true);
+    }), t(() => {
+      d2.v(), c2 = r("INP"), o2 = n(e2, c2, B, i2.reportAllChanges);
+    }));
+  });
 };
 var q = class {
-	m;
-	h(e) {
-		this.m?.(e);
-	}
+  constructor() {
+    __publicField(this, "m");
+  }
+  h(e2) {
+    var _a;
+    (_a = this.m) == null ? void 0 : _a.call(this, e2);
+  }
 };
-var N = [2500, 4e3], x = (e, s = {}) => {
-	v(() => {
-		const c = p();
-		let d, l = r("LCP");
-		const u = a(s, q), m = (e) => {
-			s.reportAllChanges || (e = e.slice(-1));
-			for (const t of e) u.h(t), t.startTime < c.firstHiddenTime && (l.value = Math.max(t.startTime - o(), 0), l.entries = [t], d());
-		}, g = h("largest-contentful-paint", m);
-		if (g) {
-			d = n(e, l, N, s.reportAllChanges);
-			const o = f(() => {
-				m(g.takeRecords()), g.disconnect(), d(!0);
-			}), c = (e) => {
-				e.isTrusted && (A(o), removeEventListener(e.type, c, { capture: !0 }));
-			};
-			for (const e of [
-				"keydown",
-				"click",
-				"visibilitychange"
-			]) addEventListener(e, c, { capture: !0 });
-			t((t) => {
-				l = r("LCP"), d = n(e, l, N, s.reportAllChanges), i(() => {
-					l.value = performance.now() - t.timeStamp, d(!0);
-				});
-			});
-		}
-	});
-}, H = [800, 1800], O = (e) => {
-	document.prerendering ? v(() => O(e)) : "complete" !== document.readyState ? addEventListener("load", () => O(e), !0) : setTimeout(e);
-}, $ = (e, i = {}) => {
-	let c = r("TTFB"), a = n(e, c, H, i.reportAllChanges);
-	O(() => {
-		const d = s();
-		d && (c.value = Math.max(d.responseStart - o(), 0), c.entries = [d], a(!0), t(() => {
-			c = r("TTFB", 0), a = n(e, c, H, i.reportAllChanges), a(!0);
-		}));
-	});
+var N = [2500, 4e3];
+var x = (e2, s2 = {}) => {
+  v(() => {
+    const c2 = p();
+    let d2, l2 = r("LCP");
+    const u2 = a(s2, q), m2 = (e3) => {
+      s2.reportAllChanges || (e3 = e3.slice(-1));
+      for (const t2 of e3) u2.h(t2), t2.startTime < c2.firstHiddenTime && (l2.value = Math.max(t2.startTime - o(), 0), l2.entries = [t2], d2());
+    }, g2 = h("largest-contentful-paint", m2);
+    if (g2) {
+      d2 = n(e2, l2, N, s2.reportAllChanges);
+      const o2 = f(() => {
+        m2(g2.takeRecords()), g2.disconnect(), d2(true);
+      }), c3 = (e3) => {
+        e3.isTrusted && (A(o2), removeEventListener(e3.type, c3, { capture: true }));
+      };
+      for (const e3 of ["keydown", "click", "visibilitychange"]) addEventListener(e3, c3, { capture: true });
+      t((t2) => {
+        l2 = r("LCP"), d2 = n(e2, l2, N, s2.reportAllChanges), i(() => {
+          l2.value = performance.now() - t2.timeStamp, d2(true);
+        });
+      });
+    }
+  });
 };
-//#endregion
-export { E as CLSThresholds, y as FCPThresholds, B as INPThresholds, N as LCPThresholds, H as TTFBThresholds, b as onCLS, T as onFCP, S as onINP, x as onLCP, $ as onTTFB };
-
+var H = [800, 1800];
+var O = (e2) => {
+  document.prerendering ? v(() => O(e2)) : "complete" !== document.readyState ? addEventListener("load", () => O(e2), true) : setTimeout(e2);
+};
+var $ = (e2, i2 = {}) => {
+  let c2 = r("TTFB"), a2 = n(e2, c2, H, i2.reportAllChanges);
+  O(() => {
+    const d2 = s();
+    d2 && (c2.value = Math.max(d2.responseStart - o(), 0), c2.entries = [d2], a2(true), t(() => {
+      c2 = r("TTFB", 0), a2 = n(e2, c2, H, i2.reportAllChanges), a2(true);
+    }));
+  });
+};
+export {
+  E as CLSThresholds,
+  y as FCPThresholds,
+  B as INPThresholds,
+  N as LCPThresholds,
+  H as TTFBThresholds,
+  b as onCLS,
+  T as onFCP,
+  S as onINP,
+  x as onLCP,
+  $ as onTTFB
+};
 //# sourceMappingURL=web-vitals.js.map
