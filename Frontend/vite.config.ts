@@ -160,13 +160,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: "dist",
       sourcemap: !isProd, // Only generate sourcemaps in development
-      minify: "terser", // Use terser for better minification
-      terserOptions: {
-        compress: {
-          drop_console: isProd, // Remove console.log in production
-          drop_debugger: isProd,
-        },
-      },
+      minify: "esbuild", // Switched to esbuild to avoid terser dependency issues on Vercel
       rollupOptions: {
         output: {
           manualChunks(id) {

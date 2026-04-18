@@ -53,7 +53,6 @@
     "sonner": "^2.0.3",
     "tailwind-merge": "*",
     "tailwindcss": "^4.1.12",
-    "terser": "^5.46.1",
     "vaul": "^1.1.2",
     "vite-plugin-compression2": "^2.3.1"
   },
