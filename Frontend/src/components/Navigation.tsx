@@ -26,6 +26,16 @@ import {
 } from "./ui/dropdown-menu";
 import { Link, useNavigate } from "react-router-dom";
 
+import { isAuthenticated, isAdmin } from "@/utils/auth";
+
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "./ui/sheet";
+
 interface NavigationProps {
   currentPage: string;
   onPageChange: (page: string) => void;
@@ -62,13 +72,8 @@ export function Navigation({ currentPage, onPageChange }: NavigationProps) {
   }, []);
 
   // keep both an id (used by onPageChange/currentPage) and a path (used by Link/navigate)
-  const isLoggedIn = (() => {
-    try { return localStorage.getItem("isLoggedIn") === "true"; } catch { return false; }
-  })();
-  const role = (() => {
-    try { return localStorage.getItem("role"); } catch { return null; }
-  })();
-  const showDashboard = isLoggedIn && role === "admin";
+  const isLoggedIn = isAuthenticated();
+  const showDashboard = isAdmin();
 
   const navItems = [
     { id: "home", path: "/", label: "Home", icon: Home },
@@ -255,154 +260,84 @@ export function Navigation({ currentPage, onPageChange }: NavigationProps) {
 
             {/* Mobile menu button */}
             <div className="md:hidden">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsMobileMenuOpen((v) => !v)}
-                aria-label="Toggle menu"
-                className="relative"
-              >
-                <AnimatePresence>
-                  <motion.div
-                    key={isMobileMenuOpen ? "close" : "menu"}
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.18 }}
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Toggle menu"
+                    className="relative"
                   >
-                    {isMobileMenuOpen ? (
-                      <X className="w-5 h-5" />
-                    ) : (
-                      <Menu className="w-5 h-5" />
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </Button>
+                    <Menu className="w-5 h-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-80 p-0">
+                  <SheetHeader className="p-6 border-b">
+                    <SheetTitle className="text-left flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-bold">{firstLetter}</span>
+                      </div>
+                      Menu
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="p-6 h-full overflow-y-auto">
+                    {/* Navigation Items */}
+                    <div className="space-y-2 mb-8">
+                      {navItems.map((item, index) => {
+                        const Icon = item.icon;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              onPageChange(item.id);
+                              setIsMobileMenuOpen(false);
+                              navigate(item.path);
+                            }}
+                            className={`flex items-center gap-3 w-full text-left px-4 py-3 text-base transition-all duration-200 rounded-lg ${
+                              currentPage === item.id
+                                ? "text-primary bg-accent border border-primary/20"
+                                : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                            }`}
+                          >
+                            <Icon className="w-5 h-5" />
+                            <span>{item.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="border-t border-border pt-6">
+                      {/* Social Links */}
+                      <div className="mb-6">
+                        <h4 className="font-medium text-sm mb-3 text-muted-foreground uppercase tracking-wider">
+                          Connect
+                    </h4>
+                        <div className="flex gap-2">
+                          {socialLinks.map((social, index) => {
+                            const Icon = social.icon;
+                            return (
+                              <a
+                                key={social.label}
+                                href={social.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-10 h-10 flex items-center justify-center rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+                                aria-label={social.label}
+                              >
+                                <Icon className="w-5 h-5" />
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </div>
       </motion.nav>
-
-      {/* Mobile menu overlay */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
-              onClick={() => setIsMobileMenuOpen(false)}
-            />
-
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed top-16 right-0 bottom-0 w-80 bg-background/95 backdrop-blur-md border-l border-border z-50 md:hidden"
-              onClick={(e) => e.stopPropagation()} // important — don't let inside clicks close the overlay
-            >
-              <div className="p-6 h-full overflow-y-auto">
-                {/* Navigation Items */}
-                <div className="space-y-2 mb-8">
-                  {navItems.map((item, index) => {
-                    const Icon = item.icon;
-                    return (
-                      <motion.button
-                        key={item.id}
-                        initial={{ x: 50, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: index * 0.06 }}
-                        onClick={() => {
-                          onPageChange(item.id);
-                          setIsMobileMenuOpen(false);
-                          navigate(item.path);
-                        }}
-                        className={`flex items-center gap-3 w-full text-left px-4 py-3 text-base transition-all duration-200 rounded-lg ${
-                          currentPage === item.id
-                            ? "text-primary bg-accent border border-primary/20"
-                            : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                        }`}
-                      >
-                        <Icon className="w-5 h-5" />
-                        <span>{item.label}</span>
-                      </motion.button>
-                    );
-                  })}
-                </div>
-
-                <div className="border-t border-border pt-6">
-                  {/* Social Links */}
-                  <div className="mb-6">
-                    <h4 className="font-medium text-sm mb-3 text-muted-foreground uppercase tracking-wider">
-                      Connect
-                    </h4>
-                    <div className="flex gap-2">
-                      {socialLinks.map((social, index) => {
-                        const Icon = social.icon;
-                        return (
-                          <motion.a
-                            key={social.label}
-                            href={social.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ delay: 0.2 + index * 0.06 }}
-                            whileTap={{ scale: 0.9 }}
-                            className="p-3 bg-muted/50 hover:bg-accent rounded-xl transition-colors flex-1 flex items-center justify-center"
-                            aria-label={social.label}
-                          >
-                            <Icon className="w-5 h-5" />
-                          </motion.a>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Theme Selector */}
-                  <div>
-                    <h4 className="font-medium text-sm mb-3 text-muted-foreground uppercase tracking-wider">
-                      Theme
-                    </h4>
-                    <div className="space-y-2">
-                      {themes.map((themeOption, index) => (
-                        <motion.button
-                          key={themeOption.value}
-                          initial={{ x: 30, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          transition={{ delay: 0.3 + index * 0.06 }}
-                          onClick={() => setTheme(themeOption.value)}
-                          className={`w-full text-left p-3 rounded-lg transition-colors ${
-                            theme === themeOption.value
-                              ? "bg-accent border border-primary/20"
-                              : "hover:bg-accent/50"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="font-medium">
-                                {themeOption.label}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {themeOption.description}
-                              </div>
-                            </div>
-                            {theme === themeOption.value && (
-                              <div className="w-3 h-3 bg-primary rounded-full" />
-                            )}
-                          </div>
-                        </motion.button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </>
   );
 }

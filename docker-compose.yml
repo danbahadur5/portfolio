@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    restart: always
+    environment:
+      - VITE_BACKEND_URL=https://your-backend-api.com
+    networks:
+      - portfolio-network
+
+  # Backend and MongoDB could be added here if needed for full local setup
+
+networks:
+  portfolio-network:
+    driver: bridge
