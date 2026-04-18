@@ -21,28 +21,12 @@ interface BlogPost {
   featured?: boolean;
 }
 
+import { useBlogs } from "@/hooks/useBlogs";
+
 export function BlogPage() {
+  const { blogs, isLoading, error } = useBlogs();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [fetchedData, setFetchedData] = useState<BlogPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchBlogData = async () => {
-      try {
-        setIsLoading(true);
-        const backend = import.meta.env.VITE_BACKEND_URL;
-        const response = await axios.get(`${backend}/api/getblogs`);
-        setFetchedData(response?.data.blogs || []);
-      } catch (error) {
-        console.error("Failed to fetch blogs:", error);
-        setFetchedData([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchBlogData();
-  }, []);
 
   if (isLoading) {
     return (
@@ -52,12 +36,21 @@ export function BlogPage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen pt-16 flex flex-col items-center justify-center">
+        <p className="text-red-500 mb-4">{error.message}</p>
+        <Button onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+    );
+  }
+
   // Extract unique tags safely
   const allTags = Array.from(
-    new Set(fetchedData.flatMap((post) => post.tags || []))
+    new Set(blogs.flatMap((post) => post.tags || []))
   );
 
-  const filteredPosts = fetchedData.filter((post) => {
+  const filteredPosts = blogs.filter((post) => {
     const matchesSearch =
       post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       post.excerpt.toLowerCase().includes(searchTerm.toLowerCase());

@@ -7,42 +7,24 @@ import { Badge } from '../ui/badge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { SearchFilter } from '../SearchFilter';
 import { LoadingSpinner } from '../LoadingSpinner';
-import { projectsData } from '../../data/projects';
-import axios from 'axios';
-import { toast } from 'react-toastify';
+import { useProjects } from '@/hooks/useProjects';
 
 export function ProjectsPage() {
+  const { projects, isLoading, error } = useProjects();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedTech, setSelectedTech] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name'>('newest');
-  const [isLoading, setIsLoading] = useState(true);
-  const [projects, setProjects] = useState<any[]>([]);
 
-  // const { projects } = projectsData;
-const  fetchProjects = async()=>{
-  const backend = import.meta.env.VITE_BACKEND_URL
-    setIsLoading(true);
-    await axios.get(`${backend}/api/getallproject`). then((res)=>{
-          setProjects(res.data.projects);
-        }).catch((err)=>{
-          toast.error(err.response?.data?.message || "Error fetching projects");
-        }).finally(() => {
-          setIsLoading(false);
-        });
-      }
-  useEffect(() => { 
-  fetchProjects();
-  }, []);
-  
   // Get unique categories and technologies
-  const categories = ['All', ...Array.from(new Set(projects.map(p => p.category)))];
-  const technologies = Array.from(new Set(projects.flatMap(p => p.technologies))).sort();
+  const categories = useMemo(() => ['All', ...Array.from(new Set(projects?.map(p => p.category) || []))], [projects]);
+  const technologies = useMemo(() => Array.from(new Set(projects?.flatMap(p => p.technologies) || [])).sort(), [projects]);
 
   // Filter and sort projects
   const filteredProjects = useMemo(() => {
-    let filtered = projects.filter(project => {
+    if (!projects) return [];
+    let filtered = [...projects].filter(project => {
       const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            project.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === 'All' || project.category === selectedCategory;
@@ -80,6 +62,15 @@ const  fetchProjects = async()=>{
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  if (error && projects.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <p className="text-red-500 mb-4">{error.message}</p>
+        <Button onClick={() => window.location.reload()}>Retry</Button>
       </div>
     );
   }

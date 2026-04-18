@@ -19,6 +19,8 @@ type Errors = {
   general?: string;
 };
 
+import { login, UserRole } from "@/utils/auth";
+
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [formData, setFormData] = useState<FormData>({
@@ -119,10 +121,9 @@ export default function LoginForm() {
 
       if (res.data?.success) {
         setIsAuthenticated(true);
-        localStorage.setItem("isLoggedIn", "true");
-        if (res.data.token) localStorage.setItem("token", res.data.token);
-        if (res.data.user?.role)
-          localStorage.setItem("role", res.data.user.role);
+        if (res.data.token && res.data.user?.role) {
+          login(res.data.token, res.data.user.role as UserRole);
+        }
 
         // Remember me behavior: save email only (not password)
         if (formData.remember) {

@@ -16,7 +16,7 @@ import {
   X,
   Loader2,
 } from "lucide-react";
-import axios from "axios";
+import api from "@/utils/api";
 import { toast } from "react-toastify";
 
 interface Experience {
@@ -45,7 +45,7 @@ export function ExperienceSection() {
 
   const fetchExperiences = async () => {
     try {
-      const res = await axios.get(`${backend}/api/getexperience`);
+      const res = await api.get(`${backend}/api/getexperience`);
       console.log("Fetched experiences:", res.data);
       setExperiences(res.data.experience || []);
     } catch (err: any) {
@@ -85,11 +85,8 @@ export function ExperienceSection() {
   async function handleDeleteExperience(id?: string) {
     if (!id) return;
 
-    const token = localStorage.getItem("token");
     try {
-      const res = await axios.delete(`${backend}/api/deleteexperience/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.delete(`${backend}/api/deleteexperience/${id}`);
 
       toast.success(res.data.message);
       setExperiences(experiences.filter((e) => e._id !== id));
@@ -103,19 +100,15 @@ export function ExperienceSection() {
     if (!newExperience) return;
 
     setIsSaving(true);
-    const token = localStorage.getItem("token");
 
     try {
       let res;
       if (newExperience._id) {
         // Update experience
         console.log("Updating experience with ID:", newExperience._id);
-        res = await axios.put(
+        res = await api.put(
           `${backend}/api/updateexperience/${newExperience._id}`,
-          newExperience,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          newExperience
         );
         console.log("Update response:", res.data);
 
@@ -127,12 +120,9 @@ export function ExperienceSection() {
       } else {
         // Create experience
         console.log("Creating new experience");
-        res = await axios.post(
+        res = await api.post(
           `${backend}/api/createexperience`,
-          newExperience,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          newExperience
         );
         console.log("Create response:", res.data);
 
