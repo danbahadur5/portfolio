@@ -50,6 +50,7 @@
     "sonner": "^2.0.3",
     "tailwind-merge": "*",
     "tailwindcss": "^4.1.12",
+    "terser": "^5.46.1",
     "vaul": "^1.1.2",
     "vite-plugin-compression2": "^2.3.1"
   },
@@ -60,7 +61,6 @@
     "@types/react": "^19.1.11",
     "@vitejs/plugin-react-swc": "^3.11.0",
     "jsdom": "^28.1.0",
-    "terser": "^5.46.1",
     "vite": "^8.0.8",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.1.4",
