@@ -15,7 +15,7 @@ import {
   ExternalLink,
   Loader2,
 } from "lucide-react";
-import axios from "axios";
+import api from "../../utils/api";
 import { toast } from "react-toastify";
 import { Label } from "../ui/label";
 
@@ -95,7 +95,7 @@ export function ContactSection() {
 
   const fetchContact = async () => {
     try {
-      const response = await axios.get(`${backend}/api/getcontact`);
+      const response = await api.get("/api/getcontact");
       console.log("Fetched contact data:", response.data);
       const contactData = response.data.contacts[0];
 
@@ -139,20 +139,12 @@ export function ContactSection() {
       if (data?._id) {
         // Update existing contact
         console.log("Updating contact with ID:", data._id);
-        res = await axios.put(
-          `${backend}/api/updatecontact/${data._id}`,
-          editData,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        res = await api.put(`/api/updatecontact/${data._id}`, editData);
         console.log("Update response:", res.data);
       } else {
         // Create new contact
         console.log("Creating new contact");
-        res = await axios.post(`${backend}/api/createcontact`, editData, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        res = await api.post("/api/createcontact", editData);
         console.log("Create response:", res.data);
       }
 

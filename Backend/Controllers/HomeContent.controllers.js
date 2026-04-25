@@ -1,5 +1,6 @@
 import cloudinary from "../Configs/cloudinary.configs.js";
 import { HomeContent } from "../Models/HomeContent.models.js";
+import { catchAsyncErrors, ErrorHandler } from "../Middlewares/error.middlewares.js";
 
 const uploadImage = async (file, options = {}) => {
   if (!file) throw new Error("No file provided");
@@ -18,119 +19,74 @@ const uploadImage = async (file, options = {}) => {
   throw new Error("Unsupported file input");
 };
 
-export const createHomeContent = async (req, res) => {
-    try {
-        const {name,location,position,summary,description} = req.body;
+export const createHomeContent = catchAsyncErrors(async (req, res, next) => {
+  const { name, location, position, summary, description } = req.body;
 
-        if (!req.file || !req.file.path) {
-            return res.status(400).json({
-                success: false,
-                message: "Please upload a profile picture",
-            });
-        }
+  if (!req.file) {
+    return next(new ErrorHandler("Profile picture is required", 400));
+  }
 
-        const save_image = await uploadImage(req.file, {folder: "profile_pics"});
+  const cloud_save = await uploadImage(req.file);
 
-        if(!name || !position || !summary){
-            return res.status(400).json({
-                success: false,
-                message: "Please fill all the fields",
-            })
-        }
-        const homeContent = await HomeContent.create({
-            name,
-            location,
-            position,
-            summary,
-            profile_pic:save_image.secure_url,
-            description,
-        })      
-        await homeContent.save();
-        res.status(200).json({
-            success: true,
-            message: "Home content created successfully",
-            homeContent,
-        })
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Internal server error",
-            error: error.message,
-        }); 
-    }
-}
+  const homeContent = await HomeContent.create({
+    name,
+    location,
+    position,
+    summary,
+    description,
+    profile_pic: cloud_save.secure_url,
+  });
 
-export const getHomeContent = async (req, res) => {
-    try {
-        const homeContent = await HomeContent.find();
-       return res.status(200).json({
-            success: true,
-            message: "Home content fetched successfully",
-            homeContent,
-        });
+  res.status(201).json({ 
+    success: true,
+    message: "Home content created successfully",
+    homeContent,
+  });
+});
 
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error",
-            error: error.message,
-        });
-    }
-}
+export const getHomeContent = catchAsyncErrors(async (req, res, next) => {
+  const homeContent = await HomeContent.findOne().sort({ createdAt: -1 });
+  res.status(200).json({
+    success: true,
+    homeContent,
+  });
+});
 
-export const updateHomeContent = async (req, res) => {
-    try {
-        const {id} = req.params;
-        let {name,location,position,summary,profile_pic,description} = req.body;
+export const updateHomeContent = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const { name, location, position, summary, description } = req.body;
 
-        if (req.file) {
-            const save_image = await uploadImage(req.file, {folder: "profile_pics"});
-            profile_pic = save_image.secure_url;
-        }
+  let updateData = { name, location, position, summary, description };
 
-        if(!name || !position || !summary){
-            return res.status(400).json({
-                success: false,
-                message: "Please fill all the fields",
-            })
-        }
-        const homeContent = await HomeContent.findByIdAndUpdate(id,{
-            name,
-            location,
-            position,
-            summary,
-            profile_pic,
-            description,
-        },{new:true, runValidators: true});
-        await homeContent.save();
-       return res.status(200).json({
-            success: true,
-            message: "Home content updated successfully",
-            homeContent,
-        })
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Internal server error",
-            error: error.message,
-        });
-    }
-}
+  if (req.file) {
+    const cloud_save = await uploadImage(req.file);
+    updateData.profile_pic = cloud_save.secure_url;
+  }
 
-export const deleteHomeContent = async (req, res) => {
-    try {
-        const {id} = req.params;
-        await HomeContent.findByIdAndDelete(id);
-        res.status(200).json({
-            success: true,
-            message: "Home content deleted successfully",
-        })
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Internal server error",
-            error: error.message,
-        });
-    }   
-    }
+  const homeContent = await HomeContent.findByIdAndUpdate(id, updateData, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!homeContent) {
+    return next(new ErrorHandler("Home content not found", 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Home content updated successfully",
+    homeContent,
+  });
+});
+
+export const deleteHomeContent = catchAsyncErrors(async (req, res, next) => {
+  const homeContent = await HomeContent.findByIdAndDelete(req.params.id);
+  if (!homeContent) {
+    return next(new ErrorHandler("Home content not found", 404));
+  }
+  res.status(200).json({
+    success: true,
+    message: "Home content deleted successfully",
+  });
+});
 

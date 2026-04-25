@@ -6,7 +6,7 @@ import { Textarea } from "../ui/textarea";
 import { Label } from "../ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Upload, Edit3, Check, X, Loader2 } from "lucide-react";
-import axios from "axios";
+import api from "../../utils/api";
 import { toast } from "react-toastify";
 
 interface AboutData {
@@ -34,9 +34,9 @@ export function AboutSection() {
 
   const fetchAboutData = async () => {
     try {
-      const res = await axios.get(`${backend}/api/getabout`);
+      const res = await api.get("/api/getabout");
       console.log("About data from backend:", res.data);
-      const aboutData = res.data.about[0];
+      const aboutData = res.data.about;
       if (aboutData) {
         console.log("Setting about data:", aboutData);
         setData(aboutData);
@@ -85,16 +85,11 @@ export function AboutSection() {
       if (data?._id) {
         // Update existing
         console.log("Updating about with ID:", data._id);
-        res = await axios.put(
-          `${backend}/api/updateabout/${data._id}`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        res = await api.put(`/api/updateabout/${data._id}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
         console.log("Update response:", res.data);
       } else {
         // Create new
@@ -104,9 +99,8 @@ export function AboutSection() {
           return;
         }
         console.log("Creating new about entry");
-        res = await axios.post(`${backend}/api/createabout`, formData, {
+        res = await api.post("/api/createabout", formData, {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         });

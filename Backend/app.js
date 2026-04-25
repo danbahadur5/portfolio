@@ -5,18 +5,27 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { router } from "./Routes/index.routes.js";
+import { errorMiddleware } from "./Middlewares/error.middlewares.js";
+import morgan from "morgan";
 
 dotenv.config();
 export const app = express();
 
+// Security middleware
+app.use(helmet());
+
+// Logging middleware
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
+
 // CORS configuration
 app.use(
   cors({
-    origin: "*",
+    origin: process.env.FRONTEND_URL || "*",
+    credentials: true,
   })
 );
-// Security middleware
-app.use(helmet());
 
 // Rate limiting
 const limiter = rateLimit({
@@ -26,6 +35,7 @@ const limiter = rateLimit({
 });
 app.use("/api", limiter);
 
+// Body parsers & Cookie parser
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
@@ -37,15 +47,4 @@ app.get("/", (req, res) => {
 });
 
 // Global error handler
-app.use((err, req, res, next) => {
-  const status = err.status || 500;
-  const message = err.message || "Internal Server Error";
-
-  console.error(err.stack);
-
-  res.status(status).json({
-    success: false,
-    message,
-    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
-  });
-});
+app.use(errorMiddleware);

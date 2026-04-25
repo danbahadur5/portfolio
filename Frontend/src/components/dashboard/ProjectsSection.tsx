@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import axios from "axios";
+import api from "../../utils/api";
 
 // ✅ TypeScript interface
 interface Project {
@@ -64,11 +64,8 @@ export function ProjectsSection() {
   // ✅ Fetch projects
   useEffect(() => {
     const fetchProjects = async () => {
-      const token = localStorage.getItem("token");
       try {
-        const res = await axios.get(`${backend}/api/getallproject`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await api.get("/api/getallproject");
 
         const projectsData = res.data.projects.map((project: any) => ({
           ...project,
@@ -147,11 +144,8 @@ export function ProjectsSection() {
   // ✅ Delete project
   async function handleDeleteProject(id?: string) {
     if (!id) return;
-    const token = localStorage.getItem("token");
     try {
-      const res = await axios.delete(`${backend}/api/deleteproject/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.delete(`/api/deleteproject/${id}`);
       toast.success(res.data.message);
       setProjects(projects.filter((p) => p._id !== id));
       setIsDialogOpen(false);
@@ -193,32 +187,22 @@ export function ProjectsSection() {
         formData.append("image", selectedFile);
 
         if (newProject._id) {
-          res = await axios.put(
-            `${backend}/api/updateproject/${newProject._id}`,
-            formData,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
+          res = await api.put(
+            `/api/updateproject/${newProject._id}`,
+            formData
           );
         } else {
-          res = await axios.post(`${backend}/api/createproject`, formData, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          res = await api.post("/api/createproject", formData);
         }
       } else {
         // Send JSON if no image file
         if (newProject._id) {
-          res = await axios.put(
-            `${backend}/api/updateproject/${newProject._id}`,
-            payload,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
+          res = await api.put(
+            `/api/updateproject/${newProject._id}`,
+            payload
           );
         } else {
-          res = await axios.post(`${backend}/api/createproject`, payload, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          res = await api.post("/api/createproject", payload);
         }
       }
 

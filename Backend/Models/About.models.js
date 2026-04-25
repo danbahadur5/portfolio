@@ -34,9 +34,9 @@ const AboutSchema = new mongoose.Schema({
         type:String,
         trim:true,
     },
-    profileImage:{
-        type:String,
-        default:"https://cdn2.vectorstock.com/i/1000x1000/17/61/male-avatar-profile-picture-vector-10211761.jpg",
+    profile_pic: {
+        type: String,
+        default: "https://cdn2.vectorstock.com/i/1000x1000/17/61/male-avatar-profile-picture-vector-10211761.jpg",
     },
 }, {timestamps:true})
 

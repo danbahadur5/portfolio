@@ -1,45 +1,27 @@
-import jwt from "jsonwebtoken"
-export const auth = async (req, res, next) => {
-    try {
-        const token = req.header("Authorization").split(" ")[1];
-        if(!token){
-            return res.status(401).json({
-                success: false,
-                message: "Please login to continue",
-            })
-        }
-        const decoded = await jwt.verify(token,process.env.JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (error) {
-        res.status(401).json({
-            success: false,
-            message: "Invalid token",   
-            error: error.message,
-        });
-    }
-}
+import jwt from "jsonwebtoken";
+import { catchAsyncErrors, ErrorHandler } from "./error.middlewares.js";
+import { User } from "../Models/User.models.js";
 
-export const isAdmin = async (req, res, next) => {
-        try {
-            if(req.user.role !== "admin"){
-                return res.status(401).json({
-                    success: false,
-                    message: "You are not authorized to access this resource",
-                })
-            }
-            if(req.user.role !== "user"){
-                return res.status(401).json({
-                    success: false,
-                    message: "You are not authorized to access this resource",
-                })
-            }
-            next();
-        } catch (error) {
-            res.status(500).json({
-                success: false,
-                message: "Internal server error",
-                error: error.message,
-            });
-        }
-}
+export const auth = catchAsyncErrors(async (req, res, next) => {
+  const token = req.cookies.token || (req.header("Authorization") && req.header("Authorization").split(" ")[1]);
+
+  if (!token) {
+    return next(new ErrorHandler("Please login to access this resource", 401));
+  }
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  req.user = await User.findById(decoded.id);
+
+  if (!req.user) {
+    return next(new ErrorHandler("User not found", 404));
+  }
+
+  next();
+});
+
+export const isAdmin = catchAsyncErrors(async (req, res, next) => {
+  if (req.user.role !== "admin") {
+    return next(new ErrorHandler(`${req.user.role} is not authorized to access this resource`, 403));
+  }
+  next();
+});

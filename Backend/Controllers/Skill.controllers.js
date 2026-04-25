@@ -1,99 +1,73 @@
 import { Skill } from "../Models/Skills.models.js";
+import { catchAsyncErrors, ErrorHandler } from "../Middlewares/error.middlewares.js";
 
-export const createSkill = async (req, res) => {
-  try {
-    const { technical, languages, frameworks } = req.body;
-
-    const skill = await Skill.create({
-      technical: technical || [],
-      languages: languages || [],
-      frameworks: frameworks || [],
-    });
-
-    res.status(201).json({
-      success: true,
-      message: "Skill created successfully",
-      skill,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
-  }
-};
-export const getSkill = async (req, res) => {
-  try {
-    const skill = await Skill.find();
-    res.status(200).json({
-      success: true,
-      message: "Skill fetched successfully",
-      skill,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
-  }
-};
-export const updateSkill = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { technical, languages, frameworks } = req.body;
-
-    const skill = await Skill.findByIdAndUpdate(
-      id,
-      {
-        technical: technical || [],
-        languages: languages || [],
-        frameworks: frameworks || [],
-      },
-      { new: true, runValidators: true }
-    );
-
-    if (!skill) {
-      return res.status(404).json({
-        success: false,
-        message: "Skill not found",
-      });
+const parseJsonIfNeeded = (data) => {
+  if (typeof data === "string") {
+    try {
+      return JSON.parse(data);
+    } catch (e) {
+      return data.split(",").map(s => s.trim());
     }
+  }
+  return data || [];
+};
 
-    res.status(200).json({
-      success: true,
-      message: "Skill updated successfully",
-      skill,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
+export const createSkill = catchAsyncErrors(async (req, res, next) => {
+  const { technical, languages, frameworks } = req.body;
+
+  const skill = await Skill.create({
+    technical: parseJsonIfNeeded(technical),
+    languages: parseJsonIfNeeded(languages),
+    frameworks: parseJsonIfNeeded(frameworks),
+  });
+
+  res.status(201).json({
+    success: true,
+    message: "Skills added successfully",
+    skill,
+  });
+});
+
+export const getSkill = catchAsyncErrors(async (req, res, next) => {
+  const skills = await Skill.find();
+  res.status(200).json({
+    success: true,
+    skills,
+  });
+});
+
+export const updateSkill = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const { technical, languages, frameworks } = req.body;
+
+  const skill = await Skill.findByIdAndUpdate(
+    id,
+    {
+      technical: parseJsonIfNeeded(technical),
+      languages: parseJsonIfNeeded(languages),
+      frameworks: parseJsonIfNeeded(frameworks),
+    },
+    { new: true, runValidators: true }
+  );
+
+  if (!skill) {
+    return next(new ErrorHandler("Skill set not found", 404));
   }
-};
-export const deleteSkill = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const skill = await Skill.findByIdAndDelete(id);
-    if (!skill) {
-      return res.status(400).json({
-        success: false,
-        message: "Skill not found",
-      });
-    }
-    res.status(200).json({
-      success: true,
-      message: "Skill deleted successfully",
-      skill,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
+
+  res.status(200).json({
+    success: true,
+    message: "Skills updated successfully",
+    skill,
+  });
+});
+
+export const deleteSkill = catchAsyncErrors(async (req, res, next) => {
+  const skill = await Skill.findByIdAndDelete(req.params.id);
+  if (!skill) {
+    return next(new ErrorHandler("Skill set not found", 404));
   }
-};
+  res.status(200).json({
+    success: true,
+    message: "Skills deleted successfully",
+  });
+});

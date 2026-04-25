@@ -1,125 +1,70 @@
-import Experience from "../Models/experience.models.js";
-export const createExperience = async (req, res) => {
-  try {
-    const {
+import { Experience } from "../Models/experience.models.js";
+import { catchAsyncErrors, ErrorHandler } from "../Middlewares/error.middlewares.js";
+
+export const createExperience = catchAsyncErrors(async (req, res, next) => {
+  const { title, company, location, start_date, end_date, description, achievements } = req.body;
+
+  const experience = await Experience.create({
+    title,
+    company,
+    location,
+    start_date,
+    end_date,
+    description,
+    achievements: typeof achievements === "string" ? JSON.parse(achievements) : achievements || [],
+  });
+
+  res.status(201).json({
+    success: true,
+    message: "Experience added successfully",
+    experience,
+  });
+});
+
+export const getExperience = catchAsyncErrors(async (req, res, next) => {
+  const experiences = await Experience.find().sort({ start_date: -1 });
+  res.status(200).json({
+    success: true,
+    experiences,
+  });
+});
+
+export const updateExperience = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const { title, company, location, start_date, end_date, description, achievements } = req.body;
+
+  const experience = await Experience.findByIdAndUpdate(
+    id,
+    {
       title,
       company,
       location,
       start_date,
       end_date,
       description,
-      achievements,
-    } = req.body;
-    if (!title || !company || !location || !start_date || !description) {
-      return res.status(400).json({
-        success: false,
-        message: "Please fill all the fields",
-      });
-    }
-    const experience = await Experience.create({
-      title,
-      company,
-      location,
-      start_date,
-      end_date: end_date || null,
-      description,
-      achievements: achievements || [],
-    });
+      achievements: typeof achievements === "string" ? JSON.parse(achievements) : achievements || [],
+    },
+    { new: true, runValidators: true }
+  );
 
-    res.status(201).json({
-      success: true,
-      message: "Experience created successfully",
-      experience,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
+  if (!experience) {
+    return next(new ErrorHandler("Experience not found", 404));
   }
-};
-export const getExperience = async (req, res) => {
-  try {
-    const experience = await Experience.find();
-    res.status(200).json({
-      success: true,
-      message: "Experience fetched successfully",
-      experience,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
-  }
-};
-export const deleteExperience = async (req, res) => {
-  try {
-    const { id } = req.params;
-    await Experience.findByIdAndDelete(id);
-    res.status(200).json({
-      success: true,
-      message: "Experience deleted successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
-  }
-};
-export const updateExperience = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const {
-      title,
-      company,
-      location,
-      start_date,
-      end_date,
-      description,
-      achievements,
-    } = req.body;
-    if (!title || !company || !location || !start_date || !description) {
-      return res.status(400).json({
-        success: false,
-        message: "Please fill all the fields",
-      });
-    }
-    const experience = await Experience.findByIdAndUpdate(
-      id,
-      {
-        title,
-        company,
-        location,
-        start_date,
-        end_date: end_date || null,
-        description,
-        achievements: achievements || [],
-      },
-      { new: true, runValidators: true }
-    );
 
-    if (!experience) {
-      return res.status(404).json({
-        success: false,
-        message: "Experience not found",
-      });
-    }
+  res.status(200).json({
+    success: true,
+    message: "Experience updated successfully",
+    experience,
+  });
+});
 
-    res.status(200).json({
-      success: true,
-      message: "Experience updated successfully",
-      experience,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
+export const deleteExperience = catchAsyncErrors(async (req, res, next) => {
+  const experience = await Experience.findByIdAndDelete(req.params.id);
+  if (!experience) {
+    return next(new ErrorHandler("Experience not found", 404));
   }
-};
+  res.status(200).json({
+    success: true,
+    message: "Experience deleted successfully",
+  });
+});

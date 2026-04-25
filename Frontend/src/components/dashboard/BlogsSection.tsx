@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Plus, Edit3, Trash2, Calendar, Tag, X, Loader2 } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { Switch } from "../ui/switch";
-import axios from "axios";
+import api from "../../utils/api";
 
 interface Blog {
   _id?: string;
@@ -38,7 +38,7 @@ export function BlogsSection() {
 
   const fetchBlogs = async () => {
     try {
-      const res = await axios.get(`${backend}/api/getblogs`);
+      const res = await api.get("/api/getblogs");
       setBlogs(res.data.blogs || []);
     } catch (err: any) {
       console.error("Error fetching blogs:", err);
@@ -69,11 +69,8 @@ export function BlogsSection() {
   async function handleDeleteBlog(id?: string) {
     if (!id) return;
 
-    const token = localStorage.getItem("token");
     try {
-      const res = await axios.delete(`${backend}/api/deleteblog/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.delete(`/api/deleteblog/${id}`);
 
       toast.success(res.data.message);
       setBlogs(blogs.filter((b) => b._id !== id));
@@ -105,16 +102,11 @@ export function BlogsSection() {
       if (newBlog._id) {
         // Update blog
         console.log("Updating blog with ID:", newBlog._id);
-        res = await axios.put(
-          `${backend}/api/updateblog/${newBlog._id}`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        res = await api.put(`/api/updateblog/${newBlog._id}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
         console.log("Update response:", res.data);
 
         setBlogs(blogs.map((b) => (b._id === newBlog._id ? res.data.blog : b)));
@@ -127,9 +119,8 @@ export function BlogsSection() {
         }
 
         console.log("Creating new blog");
-        res = await axios.post(`${backend}/api/createblog`, formData, {
+        res = await api.post("/api/createblog", formData, {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         });

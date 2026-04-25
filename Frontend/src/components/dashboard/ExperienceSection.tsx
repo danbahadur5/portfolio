@@ -45,9 +45,9 @@ export function ExperienceSection() {
 
   const fetchExperiences = async () => {
     try {
-      const res = await api.get(`${backend}/api/getexperience`);
+      const res = await api.get("/api/getexperience");
       console.log("Fetched experiences:", res.data);
-      setExperiences(res.data.experience || []);
+      setExperiences(res.data.experiences || []);
     } catch (err: any) {
       console.error("Error fetching experiences:", err);
       toast.error(err.response?.data?.message || "Error fetching experiences");
@@ -86,7 +86,7 @@ export function ExperienceSection() {
     if (!id) return;
 
     try {
-      const res = await api.delete(`${backend}/api/deleteexperience/${id}`);
+      const res = await api.delete(`/api/deleteexperience/${id}`);
 
       toast.success(res.data.message);
       setExperiences(experiences.filter((e) => e._id !== id));
@@ -107,7 +107,7 @@ export function ExperienceSection() {
         // Update experience
         console.log("Updating experience with ID:", newExperience._id);
         res = await api.put(
-          `${backend}/api/updateexperience/${newExperience._id}`,
+          `/api/updateexperience/${newExperience._id}`,
           newExperience
         );
         console.log("Update response:", res.data);
@@ -120,10 +120,7 @@ export function ExperienceSection() {
       } else {
         // Create experience
         console.log("Creating new experience");
-        res = await api.post(
-          `${backend}/api/createexperience`,
-          newExperience
-        );
+        res = await api.post("/api/createexperience", newExperience);
         console.log("Create response:", res.data);
 
         setExperiences([...experiences, res.data.experience]);

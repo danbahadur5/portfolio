@@ -6,7 +6,7 @@ import { Textarea } from "../ui/textarea";
 import { Label } from "../ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Upload, Edit3, Check, X, Loader2 } from "lucide-react";
-import axios from "axios";
+import api from "../../utils/api";
 import { toast } from "react-toastify";
 
 interface HomeContentData {
@@ -34,9 +34,9 @@ export function HomeContentSection() {
 
   const fetchHomeContent = async () => {
     try {
-      const res = await axios.get(`${backend}/api/gethomecontent`);
+      const res = await api.get("/api/gethomecontent");
       console.log("Home content from backend:", res.data);
-      const homeData = res.data.homeContent?.[0];
+      const homeData = res.data.homeContent;
       if (homeData) {
         setData(homeData);
         setEditData(homeData);
@@ -84,28 +84,18 @@ export function HomeContentSection() {
       let res;
       if (data?._id) {
         // Update existing
-        res = await axios.put(
-          `${backend}/api/updatehomecontent/${data._id}`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        res = await api.put(`/api/updatehomecontent/${data._id}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
       } else {
         // Create new
-        res = await axios.post(
-          `${backend}/api/createhomecontent`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        res = await api.post("/api/createhomecontent", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
       }
 
       toast.success("Home content saved successfully");

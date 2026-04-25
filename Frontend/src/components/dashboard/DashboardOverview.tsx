@@ -8,7 +8,7 @@ import {
   FileText,
   Loader2,
 } from "lucide-react";
-import axios from "axios";
+import api from "../../utils/api";
 import { toast } from "react-toastify";
 
 interface DashboardStats {
@@ -54,11 +54,8 @@ export function DashboardOverview() {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      const token = localStorage.getItem("token");
       try {
-        const res = await axios.get(`${backend}/api/dashboard/stats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await api.get("/api/dashboard/stats");
         setDashboardData(res.data.data);
       } catch (err: any) {
         toast.error(

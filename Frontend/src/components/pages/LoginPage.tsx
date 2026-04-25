@@ -3,9 +3,9 @@ import { Card, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, LogIn, AlertCircle, CheckCircle2 } from "lucide-react";
+import { LogIn, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../utils/api";
 
 type FormData = {
   email: string;
@@ -111,10 +111,7 @@ export default function LoginForm() {
     setSuccessMsg(null);
 
     try {
-      const backend = import.meta.env.VITE_BACKEND_URL;
-      if (!backend) throw new Error("Backend URL is not configured.");
-
-      const res = await axios.post(`${backend}/api/login`, {
+      const res = await api.post("/api/login", {
         email: formData.email,
         password: formData.password,
       });

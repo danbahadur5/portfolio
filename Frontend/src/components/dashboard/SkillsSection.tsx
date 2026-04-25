@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, X, Edit3, Check, Loader2 } from "lucide-react";
-import axios from "axios";
+import api from "../../utils/api";
 import { toast } from "react-toastify";
 
 interface Skills {
@@ -55,8 +55,8 @@ export function SkillsSection() {
 
   const fetchSkills = async () => {
     try {
-      const res = await axios.get(`${backend}/api/getskill`);
-      const skillData = res.data.skill?.[0];
+      const res = await api.get("/api/getskill");
+      const skillData = res.data.skills?.[0];
 
       if (skillData) {
         setData(skillData);
@@ -82,16 +82,10 @@ export function SkillsSection() {
       let res;
       if (data?._id) {
         // Update existing skills
-        res = await axios.put(
-          `${backend}/api/updateskill/${data._id}`,
-          editData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        res = await api.put(`/api/updateskill/${data._id}`, editData);
       } else {
         // Create new skills
-        res = await axios.post(`${backend}/api/createskill`, editData, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        res = await api.post("/api/createskill", editData);
       }
 
       setData(res.data.skill);

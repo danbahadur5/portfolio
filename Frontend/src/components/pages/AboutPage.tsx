@@ -1,295 +1,158 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { Mail, MapPin, Calendar, Code, Coffee, Music } from "lucide-react";
+import { Mail, MapPin, Calendar, Code } from "lucide-react";
 import { Button } from "../ui/button";
-import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
-import { Progress } from "../ui/progress";
-import { contentData } from "../../data/content";
-import { Link } from "react-router-dom";
-import axios from "axios";
+import { useAbout } from "@/hooks/useAbout";
 import { LoadingSpinner } from "../LoadingSpinner";
-
-interface AboutPageProps {
-  onPageChange: (page: string) => void;
-}
+import { useSkills } from "@/hooks/useSkills";
 
 export function AboutPage() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [aboutData, setAboutData] = useState<any>(null);
-  const [skillsData, setSkillsData] = useState<string[]>([]);
-  const [experienceData, setExperienceData] = useState<any[]>([]);
-  const { skills: defaultSkills, experience: defaultExperience } = contentData;
+  const { data, isLoading, error } = useAbout();
+  const { skills, isLoading: skillsLoading } = useSkills();
+  const [activeTab, setActiveTab] = useState("about");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const backend = import.meta.env.VITE_BACKEND_URL;
-        const [aboutRes, skillRes, expRes] = await Promise.all([
-          axios.get(`${backend}/api/getabout`),
-          axios.get(`${backend}/api/getskill`),
-          axios.get(`${backend}/api/getexperience`),
-        ]);
+  const skillList = useMemo(() => skills?.technical || [], [skills]);
 
-        if (aboutRes.data.about && aboutRes.data.about.length > 0) {
-          setAboutData(aboutRes.data.about[0]);
-        }
-
-        if (skillRes.data.skill && skillRes.data.skill.length > 0) {
-          const s = skillRes.data.skill[0];
-          const combinedSkills = [
-            ...(s.technical || []),
-            ...(s.frameworks || []),
-            ...(s.languages || []),
-          ];
-          setSkillsData([...new Set(combinedSkills)]);
-        }
-
-        if (expRes.data.experience && Array.isArray(expRes.data.experience)) {
-           setExperienceData(expRes.data.experience);
-        }
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  if (isLoading) {
+  if (isLoading || skillsLoading) {
     return (
-      <div className="min-h-screen pt-16 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <LoadingSpinner size="lg" />
       </div>
     );
   }
 
-  const personal = aboutData
-    ? {
-        name: aboutData.name,
-        location: aboutData.location,
-        email: aboutData.email,
-        avatar: aboutData.profileImage,
-        description: aboutData.bio,
-        position: aboutData.title,
-      }
-    : contentData.personal;
-
-  const skills = skillsData.length > 0 ? skillsData : defaultSkills;
-
-  const experience = experienceData.length > 0 
-    ? experienceData.map((exp) => ({
-        company: exp.company,
-        position: exp.title,
-        duration: `${new Date(exp.start_date).getFullYear()} - ${exp.end_date ? new Date(exp.end_date).getFullYear() : 'Present'}`,
-        description: exp.description,
-      }))
-    : defaultExperience || [];
-
-  const interests = [
-    {
-      icon: Code,
-      label: "Coding",
-      description: "Always learning new technologies",
-    },
-    { icon: Coffee, label: "Coffee", description: "Fuel for productivity" },
-    { icon: Music, label: "Music", description: "Inspiration for creativity" },
-  ];
-
-  const stats = [
-    { label: "Years of Experience", value: "3+" },
-    { label: "Projects Completed", value: "10+" },
-    { label: "Happy Clients", value: "25+" },
-    { label: "Coffee Consumed", value: "∞" },
-  ];
+  if (error || !data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4 text-center">
+        <div className="max-w-xl rounded-3xl p-10 glass-card">
+          <h1 className="text-3xl font-bold mb-4">About content unavailable</h1>
+          <p className="text-muted-foreground">
+            Unable to load profile data right now. Refresh or check back later.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen pt-16">
-      {/* Header */}
-      <section className="py-16 px-4">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">About Me</h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Get to know the person behind the code. My journey, experiences,
-              and what drives me.
+    <div className="min-h-screen bg-background">
+      <section className="pt-24 pb-10 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-6 lg:max-w-2xl">
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-primary">
+                About Me
+              </p>
+              <h1 className="text-4xl sm:text-5xl font-heading font-black tracking-tight">
+                I build thoughtful digital experiences with code, design, and
+                strategy.
+              </h1>
+            </div>
+            <p className="text-base sm:text-lg leading-relaxed text-muted-foreground">
+              {data.bio ||
+                "A full-stack developer who turns ideas into polished products with modern technologies and clean interfaces."}
             </p>
-          </motion.div>
-
-          <div className="grid lg:grid-cols-2 gap-16 items-start">
-            {/* Personal Info */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-            >
-              <div className="relative mb-8">
-                <ImageWithFallback
-                  src={personal.avatar}
-                  alt={personal.name}
-                  className="w-48 h-48 rounded-2xl object-cover mx-auto lg:mx-0 shadow-xl"
-                />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm">
+                <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground mb-3">
+                  Location
+                </p>
+                <p className="font-semibold text-foreground">
+                  {data.location || "Remote / Global"}
+                </p>
               </div>
-
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center text-muted-foreground">
-                  <MapPin className="w-5 h-5 mr-3" />
-                  <span>{personal.location}</span>
-                </div>
-                <div className="flex items-center text-muted-foreground">
-                  <Mail className="w-5 h-5 mr-3" />
-                  <span>{personal.email}</span>
-                </div>
-                <div className="flex items-center text-muted-foreground">
-                  <Calendar className="w-5 h-5 mr-3" />
-                  <span>Available for new projects</span>
-                </div>
+              <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm">
+                <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground mb-3">
+                  Email
+                </p>
+                <p className="font-semibold text-foreground">
+                  {data.email || "hello@example.com"}
+                </p>
               </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Badge variant="secondary">
+                {data.title || "Full-Stack Developer"}
+              </Badge>
+              <Badge variant="secondary">
+                {data.name || "Portfolio Builder"}
+              </Badge>
+            </div>
+          </div>
 
-              <Link to="/contact">
-                <Button size="lg" className="w-full lg:w-auto">
-                  Let's Work Together
-                </Button>
-              </Link>
-            </motion.div>
-
-            {/* Bio & Stats */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="space-y-6"
-            >
-              <div>
-                <h2 className="text-2xl font-bold mb-4">My Story</h2>
-                <div className="space-y-4 text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                  {personal.description || (
-                    <>
-                      <p>
-                        I'm a passionate full-stack developer with over 3 years of
-                        experience creating digital solutions that make a
-                        difference. My journey started with a curiosity about how
-                        websites work, and it quickly evolved into a love for
-                        building complex applications that solve real-world
-                        problems.
-                      </p>
-                      <p>
-                        I believe in writing clean, maintainable code and creating
-                        user experiences that are both beautiful and functional.
-                        When I'm not coding, you can find me exploring new
-                        technologies, contributing to open source projects, or
-                        sharing knowledge with the developer community.
-                      </p>
-                    </>
-                  )}
+          <div className="mx-auto w-full max-w-md rounded-[2rem] overflow-hidden border border-border/70 bg-card shadow-2xl shadow-black/5">
+            <ImageWithFallback
+              src={data.profileImage || "https://via.placeholder.com/560x700"}
+              alt={data.name || "Profile"}
+              className="h-[420px] w-full object-cover"
+            />
+            <div className="space-y-4 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">
+                    Current Role
+                  </p>
+                  <p className="font-semibold text-foreground">
+                    {data.title || "Software Engineer"}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
+                  Available
                 </div>
               </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-4">
-                {stats.map((stat, index) => (
-                  <motion.div
-                    key={stat.label}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 + index * 0.1 }}
-                  >
-                    <Card>
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-primary mb-1">
-                          {stat.value}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {stat.label}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span>5+ years experience</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <span>{data.email || "hello@example.com"}</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  <span>{data.location || "Remote / Global"}</span>
+                </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Skills & Interests */}
-      <section className="py-16 px-4 bg-muted/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16">
-            {/* Skills */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-2xl font-bold mb-8">Technical Skills</h2>
-              <div className="space-y-6">
-                {skills.slice(0, 8).map((skill, index) => (
-                  <motion.div
-                    key={skill}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">{skill}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {85 + Math.floor(Math.random() * 15)}%
-                      </span>
-                    </div>
-                    <Progress
-                      value={85 + Math.floor(Math.random() * 15)}
-                      className="h-2"
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
+      <section className="pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-muted-foreground mb-3">
+                Skillset
+              </p>
+              <h2 className="text-3xl font-heading font-black">
+                What I enjoy building
+              </h2>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {skillList.slice(0, 6).map((skill) => (
+                <Badge key={skill}>{skill}</Badge>
+              ))}
+            </div>
+          </div>
 
-            {/* Interests */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-2xl font-bold mb-8">When I'm Not Coding</h2>
-              <div className="space-y-6">
-                {interests.map((interest, index) => (
-                  <motion.div
-                    key={interest.label}
-                    initial={{ opacity: 0, x: 20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.2 }}
-                    whileHover={{ x: 5 }}
-                    className="flex items-start space-x-4 p-4 rounded-lg hover:bg-background transition-colors"
-                  >
-                    <div className="p-3 bg-primary/10 rounded-lg">
-                      <interest.icon className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-1">{interest.label}</h3>
-                      <p className="text-muted-foreground text-sm">
-                        {interest.description}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
+            {skillList.slice(0, 6).map((skill) => (
+              <div
+                key={skill}
+                className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm"
+              >
+                <p className="text-base font-semibold text-foreground">
+                  {skill}
+                </p>
               </div>
-            </motion.div>
+            ))}
           </div>
         </div>
       </section>
-
     </div>
   );
 }

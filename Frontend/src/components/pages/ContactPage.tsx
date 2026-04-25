@@ -17,7 +17,7 @@ import { Textarea } from "../ui/textarea";
 import { Badge } from "../ui/badge";
 import { LoadingSpinner } from "../LoadingSpinner";
 import { useForm } from "react-hook-form";
-import axios from "axios";
+import api from "../../utils/api";
 
 interface FormData {
   name: string;
@@ -48,17 +48,16 @@ export function ContactPage() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const backend = import.meta.env.VITE_BACKEND_URL;
         const [contactRes, aboutRes] = await Promise.all([
-          axios.get(`${backend}/api/getcontact`),
-          axios.get(`${backend}/api/getabout`),
+          api.get("/api/getcontact"),
+          api.get("/api/getabout"),
         ]);
 
         if (contactRes.data.contacts && contactRes.data.contacts.length > 0) {
           setContactInfo(contactRes.data.contacts[0]);
         }
-        if (aboutRes.data.about && aboutRes.data.about.length > 0) {
-          setAboutInfo(aboutRes.data.about[0]);
+        if (aboutRes.data.about) {
+          setAboutInfo(aboutRes.data.about);
         }
       } catch (error) {
         console.error("Failed to fetch contact info:", error);
@@ -73,8 +72,7 @@ export function ContactPage() {
     setIsSubmitting(true);
 
     try {
-      const backend = import.meta.env.VITE_BACKEND_URL;
-      await axios.post(`${backend}/api/sendmessage`, data);
+      await api.post("/api/sendmessage", data);
       setSubmitStatus("success");
       reset();
     } catch (error) {

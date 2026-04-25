@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import {
   Sidebar,
   SidebarContent,
@@ -42,28 +43,31 @@ import { ExperienceSection } from "./dashboard/ExperienceSection";
 import { ContactSection } from "./dashboard/ContactSection";
 import { BlogsSection } from "./dashboard/BlogsSection";
 import { DashboardOverview } from "./dashboard/DashboardOverview";
-import axios from "axios";
+import api from "../utils/api";
 
 export interface PortfolioData {
   about: {
     _id: string;
     name: string;
-    email: string;
     title: string;
     bio: string;
     profileImage: string;
     location: string;
+    email: string;
   };
   projects: Array<{
-    id: string;
+    _id: string;
     title: string;
     description: string;
     image: string;
     technologies: string[];
     liveUrl: string;
-    githubUrl: string;
+    sourceUrl: string;
+    category: string;
+    featured: boolean;
   }>;
   skills: {
+    _id?: string;
     technical: string[];
     languages: string[];
     frameworks: string[];
@@ -75,17 +79,11 @@ export interface PortfolioData {
     location: string;
     description: string;
     achievements: string[];
+    startDate?: string;
+    endDate?: string;
   }>;
-  contact: {
-    email: string;
-    phone: string;
-    linkedin: string;
-    github: string;
-    twitter: string;
-    website: string;
-  };
   blogs: Array<{
-    id: string;
+    _id: string;
     title: string;
     excerpt: string;
     content: string;
@@ -94,6 +92,24 @@ export interface PortfolioData {
     publishDate: string;
     published: boolean;
   }>;
+  contact: {
+    _id?: string;
+    email: string;
+    phone: string;
+    linkedin: string;
+    github: string;
+    twitter: string;
+    website: string;
+  };
+  homeContent: {
+    _id?: string;
+    name: string;
+    position: string;
+    description: string;
+    profile_pic: string;
+    summary: string;
+    location: string;
+  };
 }
 
 const initialData: PortfolioData = {
@@ -113,6 +129,7 @@ const initialData: PortfolioData = {
     frameworks: [],
   },
   experience: [],
+  blogs: [],
   contact: {
     email: "",
     phone: "",
@@ -121,7 +138,14 @@ const initialData: PortfolioData = {
     twitter: "",
     website: "",
   },
-  blogs: [],
+  homeContent: {
+    name: "",
+    position: "",
+    description: "",
+    profile_pic: "",
+    summary: "",
+    location: "",
+  },
 };
 
 const menuItems = [
@@ -183,31 +207,45 @@ export function PortfolioDashboard() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const navigate = useNavigate();
 
-  const fetchAbout = async () => {
-    const backend = import.meta.env.VITE_BACKEND_URL;
-    return await axios.get(`${backend}/api/getabout`);
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [
+          aboutRes,
+          skillsRes,
+          expRes,
+          projectsRes,
+          blogsRes,
+          contactRes,
+          homeContentRes,
+        ] = await Promise.all([
+          api.get("/api/getabout"),
+          api.get("/api/getskill"),
+          api.get("/api/getexperience"),
+          api.get("/api/getallproject"),
+          api.get("/api/getblogs"),
+          api.get("/api/getcontact"),
+          api.get("/api/gethomecontent"),
+        ]);
 
-  fetchAbout().then((res) => {
-    data.about = res.data.about[0];
-  });
-
-  const fetchSkills = async () => {
-    const backend = import.meta.env.VITE_BACKEND_URL;
-    return await axios.get(`${backend}/api/getskill`);
-  };
-
-  fetchSkills().then((res) => {
-    data.skills = res.data.skill[0];
-  });
-  const fetchExperience = async () => {
-    const backend = import.meta.env.VITE_BACKEND_URL;
-    return await axios.get(`${backend}/api/getexperience`);
-  };
-
-  fetchExperience().then((res) => {
-    data.experience = res.data.experience[0];
-  });
+        setData((prev) => ({
+          ...prev,
+          about: aboutRes.data.about || prev.about,
+          skills: skillsRes.data.skills?.[0] || prev.skills,
+          experience: expRes.data.experiences || prev.experience,
+          projects: projectsRes.data.projects || prev.projects,
+          blogs: blogsRes.data.blogs || prev.blogs,
+          contact: contactRes.data.contacts?.[0] || prev.contact,
+          homeContent: homeContentRes.data.homeContent?.[0] || prev.homeContent,
+        }));
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        // Show error toast
+        toast.error("Failed to load dashboard data");
+      }
+    };
+    fetchData();
+  }, []);
 
   const updateData = (section: keyof PortfolioData, newData: any) => {
     setData((prev) => ({
@@ -217,11 +255,48 @@ export function PortfolioDashboard() {
     setHasUnsavedChanges(true);
   };
 
-  const handleSave = () => {
-    // In a real app, this would save to a backend
-    console.log("Saving data:", data);
-    setHasUnsavedChanges(false);
-    // Show success message
+  const handleSave = async () => {
+    try {
+      setHasUnsavedChanges(false);
+      toast.info("Saving changes...");
+
+      // Save about data
+      if (data.about._id) {
+        await api.put(`/api/updateabout/${data.about._id}`, data.about);
+      } else {
+        await api.post("/api/createabout", data.about);
+      }
+
+      // Save skills data
+      if (data.skills._id) {
+        await api.put(`/api/updateskill/${data.skills._id}`, data.skills);
+      } else {
+        await api.post("/api/createskill", data.skills);
+      }
+
+      // Save contact data
+      if (data.contact._id) {
+        await api.put(`/api/updatecontact/${data.contact._id}`, data.contact);
+      } else {
+        await api.post("/api/createcontact", data.contact);
+      }
+
+      // Save home content
+      if (data.homeContent._id) {
+        await api.put(
+          `/api/updatehomecontent/${data.homeContent._id}`,
+          data.homeContent,
+        );
+      } else {
+        await api.post("/api/createhomecontent", data.homeContent);
+      }
+
+      toast.success("All changes saved successfully!");
+    } catch (error) {
+      console.error("Error saving data:", error);
+      toast.error("Failed to save changes. Please try again.");
+      setHasUnsavedChanges(true);
+    }
   };
 
   const toggleTheme = () => {
@@ -329,11 +404,22 @@ export function PortfolioDashboard() {
                       <button
                         type="button"
                         title="Logout"
-                        onClick={() => {
+                        onClick={async () => {
+                          try {
+                            await api.get("/api/logout");
+                          } catch (error) {
+                            console.error("Logout error:", error);
+                          }
+                          // Clear local storage
+                          localStorage.removeItem("auth_is_logged_in");
+                          localStorage.removeItem("auth_token");
+                          localStorage.removeItem("auth_role");
+                          localStorage.removeItem("token");
                           localStorage.setItem("isLoggedIn", "false");
+                          toast.success("Logged out successfully");
                           navigate("/");
                         }}
-                        className="inline-flex items-center  cursor-pointer justify-center p-2 rounded-md hover:text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2  focus:ring-red-200"
+                        className="inline-flex items-center cursor-pointer justify-center p-2 rounded-md hover:text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200"
                       >
                         <LogOut className="h-4 w-4" />
                       </button>
