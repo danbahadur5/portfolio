@@ -8,9 +8,20 @@ import rateLimit from "express-rate-limit";
 import { router } from "./Routes/index.routes.js";
 import { errorMiddleware } from "./Middlewares/error.middlewares.js";
 import morgan from "morgan";
+import { connectDB } from "./Configs/DB.configs.js";
 
 dotenv.config();
 export const app = express();
+
+// Ensure DB connection for serverless
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 // Security middleware
 app.use(
@@ -55,7 +66,7 @@ app.use(
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: process.env.NODE_ENV === "development" ? 1000 : 100, // Increase limit in development
   message: "Too many requests from this IP, please try again later.",
 });
 app.use("/api", limiter);
@@ -73,3 +84,5 @@ app.get("/", (req, res) => {
 
 // Global error handler
 app.use(errorMiddleware);
+
+export default app;

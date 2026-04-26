@@ -15,6 +15,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { useSiteSettings } from "../hooks/useSiteSettings";
+import { Logo } from "./ui/Logo";
 
 const iconMap: Record<string, any> = {
   github: Github,
@@ -57,23 +58,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24">
           {/* Brand Section */}
           <div className="lg:col-span-2 space-y-8">
-            <Link to="/" className="inline-flex items-center gap-3 group">
-              <div className="relative w-12 h-12 flex items-center justify-center">
-                <motion.div 
-                  className="absolute inset-0 bg-primary rounded-2xl rotate-0 group-hover:rotate-12 transition-transform duration-500 shadow-xl shadow-primary/20"
-                />
-                <span className="relative text-primary-foreground font-black text-2xl">
-                  {settings?.siteName?.charAt(0) || "P"}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-2xl tracking-tighter leading-none mb-1">
-                  {settings?.siteName || "Portfolio"}
-                </span>
-                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.3em]">
-                  {settings?.siteTagline || "Digital Artisan"}
-                </span>
-              </div>
+            <Link to="/">
+              <Logo size="lg" />
             </Link>
             
             <p className="text-muted-foreground text-lg font-medium leading-relaxed max-w-md">

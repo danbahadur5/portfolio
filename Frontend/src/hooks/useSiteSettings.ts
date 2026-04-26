@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import api from "../utils/api";
+import { useSiteContext } from "../contexts/SiteContext";
 
 export interface PublicSettings {
   siteName: string;
@@ -38,26 +37,6 @@ export interface PublicSettings {
 }
 
 export const useSiteSettings = () => {
-  const [data, setData] = useState<PublicSettings | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await api.get("/api/public-settings");
-        if (response.data.success) {
-          setData(response.data.settings);
-        }
-      } catch (err: any) {
-        setError(err.response?.data?.message || "Failed to fetch settings");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSettings();
-  }, []);
-
-  return { data, isLoading, error };
+  const { settings, isLoading, error } = useSiteContext();
+  return { data: settings, isLoading, error };
 };

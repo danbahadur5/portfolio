@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { SiteProvider } from "./contexts/SiteContext";
 import { Loader2 } from "lucide-react";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -73,9 +74,11 @@ export default function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
-          <Router>
-            <AppRoutes />
-          </Router>
+          <SiteProvider>
+            <Router>
+              <AppRoutes />
+            </Router>
+          </SiteProvider>
         </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>

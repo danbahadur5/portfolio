@@ -109,8 +109,8 @@ export function AboutPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               >
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-[0.3em] mb-8 border border-primary/20 touch-target">
-                  <Sparkles className="w-3 h-3" />
+                <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/5 dark:bg-primary/[0.03] text-primary/80 dark:text-primary/60 text-[9px] font-bold uppercase tracking-[0.1em] mb-8 border border-primary/10 dark:border-white/10 backdrop-blur-sm shadow-sm w-fit">
+                  <Sparkles className="w-2.5 h-2.5" />
                   Digital Craftsman
                 </div>
                 <h1 className="responsive-heading-hero font-heading font-black tracking-tighter mb-8 leading-[0.9]">

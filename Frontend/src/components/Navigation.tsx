@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useTheme } from "./ThemeProvider";
+import { Logo } from "./ui/Logo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -125,23 +126,8 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
           {/* Logo Section */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="relative w-9 h-9 xs:w-10 xs:h-10 md:w-11 md:h-11 flex items-center justify-center overflow-hidden rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500 shadow-sm">
-              <Sparkles className="w-4 h-4 xs:w-5 xs:h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform duration-300" />
-              <motion.div 
-                className="absolute inset-0 bg-primary/20"
-                initial={false}
-                whileHover={{ scale: 1.5, opacity: 0 }}
-              />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-base xs:text-lg md:text-xl tracking-tight leading-none group-hover:text-primary transition-colors">
-                {settings?.siteName || "Portfolio"}
-              </span>
-              <span className="text-[9px] xs:text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden sm:block">
-                {settings?.siteTagline || "CMS Powered"}
-              </span>
-            </div>
+          <Link to="/">
+            <Logo size="md" shortForm={true} />
           </Link>
 
           {/* Desktop Navigation */}
@@ -235,20 +221,8 @@ export function Navigation() {
               <SheetContent side="right" className="w-full sm:w-[350px] p-0">
                 <div className="flex flex-col h-full">
                   <div className="p-6 border-b">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                        <Sparkles className="w-6 h-6" />
-                      </div>
-                      <div className="flex flex-col">
-                        <SheetTitle className="text-xl font-bold leading-none">
-                          {settings?.siteName || "Portfolio"}
-                        </SheetTitle>
-                        <span className="text-xs text-muted-foreground mt-1">
-                          {settings?.siteTagline || "CMS Powered"}
-                        </span>
-                      </div>
+                      <Logo size="md" shortForm={true} />
                     </div>
-                  </div>
                   
                   <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
                     {navItems.map((item) => {

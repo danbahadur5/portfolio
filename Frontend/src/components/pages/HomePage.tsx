@@ -31,6 +31,7 @@ import {
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
+import { PolaroidFrames } from "../PolaroidFrames";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { LoadingSpinner } from "../LoadingSpinner";
 import { Link, useNavigate } from "react-router-dom";
@@ -72,11 +73,10 @@ export function HomePage() {
 
   // Professional fluidity: Optimized scroll transformations
   // Smoother transition with subtle scale and blur for high-end feel
-  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
-  const heroScale = useTransform(scrollY, [0, 400], [1, 0.96]);
-  const heroBlur = useTransform(scrollY, [0, 400], [0, 10]);
-  const contentY = useTransform(scrollY, [0, 400], [0, 60]);
-  const bgTextX = useTransform(scrollY, [0, 1000], [0, -150]);
+  // Simplified, high-performance scroll effects
+  const heroOpacity = useTransform(scrollY, [0, 150], [1, 0.4]);
+  const contentY = useTransform(scrollY, [0, 150], [0, 15]);
+  const bgTextX = useTransform(scrollY, [0, 500], [0, -40]);
 
   // Combine all skills from different categories in the dashboard
   const skills = useMemo(() => {
@@ -207,7 +207,7 @@ export function HomePage() {
           aria-hidden="true"
         >
           <motion.div
-            style={{ x: bgTextX }}
+            style={{ x: bgTextX, willChange: "transform" }}
             className="absolute top-[10%] md:top-[15%] left-[-5%] md:left-[-2%] whitespace-nowrap"
           >
             <span className="text-[15vw] md:text-[12vw] font-black text-primary/[0.03] dark:text-primary/[0.02] uppercase tracking-tighter leading-none select-none transition-colors duration-500">
@@ -226,14 +226,13 @@ export function HomePage() {
           <motion.div
             style={{
               opacity: heroOpacity,
-              scale: heroScale,
               y: contentY,
-              filter: `blur(${heroBlur}px)`,
+              willChange: "transform, opacity"
             }}
             className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 md:gap-16 lg:gap-24 items-center"
           >
             {/* Left Content - Improved Mobile Layout */}
-            <div className="relative order-2 lg:order-1 text-center lg:text-left">
+            <div className="relative order-1 lg:order-1 text-center lg:text-left">
               <motion.div
                 initial={{ opacity: 0, x: -40 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -244,14 +243,14 @@ export function HomePage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.5 }}
-                  className="mb-6 md:mb-8"
+                  className="mt-4 mb-6 md:mb-8"
                 >
-                  <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-2 rounded-2xl bg-white/40 dark:bg-white/5 border border-primary/10 dark:border-white/10 backdrop-blur-xl shadow-xl shadow-primary/5 group">
-                    <span className="relative flex h-2 w-2">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/5 dark:bg-primary/[0.03] border border-primary/10 dark:border-white/10 backdrop-blur-sm shadow-sm group">
+                    <span className="relative flex h-1 w-1">
                       <span className="absolute h-full w-full rounded-full bg-primary/40 animate-ping" />
                       <span className="relative h-full w-full rounded-full bg-primary" />
                     </span>
-                    <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-foreground/70 dark:text-foreground/50">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-primary/80 dark:text-primary/60">
                       {homeContent?.summary || "Senior Engineer Available"}
                     </span>
                   </div>
@@ -393,7 +392,7 @@ export function HomePage() {
                 ease: [0.16, 1, 0.3, 1],
                 delay: 0.4,
               }}
-              className="relative flex justify-center lg:justify-end order-1 lg:order-2"
+              className="relative flex justify-center lg:justify-end order-2 lg:order-2 mb-16 sm:mb-20 lg:mb-0"
             >
               <div className="relative w-full max-w-[280px] xs:max-w-sm sm:max-w-md lg:max-w-lg aspect-square lg:aspect-auto lg:w-full lg:max-w-[420px] lg:aspect-square group/hero-right">
                 {/* Advanced Dynamic Gradient System */}
@@ -434,48 +433,12 @@ export function HomePage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 transition-opacity duration-500 group-hover/hero-right:opacity-40" />
 
-                  {/* Small Bottom Edge Tag - Low Profile */}
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 1, duration: 0.6 }}
-                    className="absolute bottom-[20%] right-4 xs:right-6 lg:right-10 z-20"
-                  >
-                    <div className="flex items-center gap-2 px-2 xs:px-3 py-1 rounded-full bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)] group-hover/hero-right:border-emerald-500/40 transition-all duration-500">
-                      <div className="w-1 xs:w-1.5 h-1 xs:h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-emerald-500 text-[7px] xs:text-[8px] lg:text-[9px] font-black uppercase tracking-[0.2em] whitespace-nowrap">
-                        Open for Collaboration
-                      </span>
-                    </div>
-                  </motion.div>
-
-                  {/* Identity Tag - Compact Button Edition */}
-                  <div className="absolute bottom-3 xs:bottom-4 left-3 xs:left-4 right-3 xs:right-4 z-20">
-                    <motion.button
-                      whileHover={{ y: -2, scale: 1.01 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full flex items-center justify-between gap-3 xs:gap-4 p-2.5 xs:p-3 lg:p-4 rounded-xl xs:rounded-2xl bg-white/10 dark:bg-black/40 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-2xl group/id-tag overflow-hidden touch-target focus-ring"
-                    >
-                      {/* Animated Sheen */}
-                      <motion.div
-                        animate={{ x: ['-100%', '200%'] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatDelay: 4 }}
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 z-0"
-                      />
-
-                      <div className="relative z-10 flex flex-col items-start text-left">
-                        <span className="text-primary font-black text-[7px] xs:text-[8px] lg:text-[9px] uppercase tracking-[0.3em] leading-none mb-1 xs:mb-1.5">
-                          {homeContent?.position || "Full Stack Developer"}
-                        </span>
-                        <h2 className="text-white font-bold text-base xs:text-lg lg:text-xl tracking-tight leading-none">
-                          {homeContent?.name || "Dan Bahadur Bist"}
-                        </h2>
-                      </div>
-
-                      <div className="relative z-10 w-7 h-7 xs:w-8 xs:h-8 lg:w-10 lg:h-10 rounded-lg xs:rounded-xl bg-white/10 flex items-center justify-center group-hover/id-tag:bg-primary/20 transition-colors">
-                        <ArrowRight className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-white group-hover/id-tag:translate-x-0.5 transition-transform" />
-                      </div>
-                    </motion.button>
+                  {/* Enhanced Polaroid Section */}
+                  <div className="absolute inset-x-0 bottom-0 z-30 transform translate-y-0 sm:translate-y-1/4">
+                    <PolaroidFrames 
+                      name={homeContent?.name} 
+                      position={homeContent?.position} 
+                    />
                   </div>
                 </motion.div>
 
@@ -599,12 +562,12 @@ export function HomePage() {
               viewport={{ once: true }}
               className="mb-4"
             >
-              <Badge
-                variant="outline"
-                className="px-5 py-2 rounded-full border-primary/20 text-primary bg-primary/5 font-black uppercase tracking-[0.4em] text-[10px]"
+              <div
+                className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/5 dark:bg-primary/[0.03] text-primary/80 dark:text-primary/60 text-[9px] font-bold uppercase tracking-[0.1em] mb-4 border border-primary/10 dark:border-white/10 backdrop-blur-sm shadow-sm w-fit mx-auto"
               >
+                <Sparkles className="w-2.5 h-2.5" />
                 Industrial Features
-              </Badge>
+              </div>
             </motion.div>
             <h2 className="text-4xl md:text-6xl font-black mb-6 font-heading tracking-tighter text-foreground">
               Engineering <span className="text-gradient">Excellence</span>

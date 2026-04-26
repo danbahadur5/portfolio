@@ -108,10 +108,10 @@ export function ProjectsPage() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="text-center"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-6 border border-primary/20 backdrop-blur-sm touch-target">
-              <Rocket className="w-3.5 h-3.5" />
-              Engineering Showcase
-            </div>
+            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/5 dark:bg-primary/[0.03] text-primary/80 dark:text-primary/60 text-[9px] font-bold uppercase tracking-[0.1em] mb-6 border border-primary/10 dark:border-white/10 backdrop-blur-sm shadow-sm w-fit mx-auto">
+               <Rocket className="w-2.5 h-2.5" />
+               Engineering Showcase
+             </div>
             <h1 className="responsive-heading-hero font-heading font-black tracking-tighter mb-6 leading-[0.95]">
               Selected <span className="text-gradient">Projects</span>
             </h1>
