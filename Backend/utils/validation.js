@@ -107,6 +107,8 @@ export const messageSchema = Joi.object({
   email: Joi.string().email().required(),
   subject: Joi.string().min(3).max(200).required(),
   message: Joi.string().min(10).max(5000).required(),
+  budget: Joi.string().allow(""),
+  timeline: Joi.string().allow(""),
 });
 
 export const aboutSchema = Joi.object({

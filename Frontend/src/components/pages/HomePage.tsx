@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   MapPin,
@@ -28,6 +28,7 @@ import {
   ExternalLink,
   Terminal,
 } from "lucide-react";
+import confetti from "canvas-confetti";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -63,20 +64,43 @@ export function HomePage() {
     }, 1500);
   };
 
+  const handleRocketClick = () => {
+    const duration = 3 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+    const interval: any = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+      
+      // Since particles fall down, start them higher
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        colors: ['#ff0000', '#ffa500', '#ffff00', '#008000', '#0000ff', '#4b0082', '#ee82ee'], // Colorful rainbow
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        colors: ['#FFD700', '#FFA500', '#FF4500'], // Fire/Rocket colors
+      });
+    }, 250);
+  };
+
   const { data: homeContent, isLoading: isHomeLoading } = useHomeContent();
   const { projects, isLoading: isProjectsLoading } = useProjects();
   const { blogs, isLoading: isBlogsLoading } = useBlogs();
   const { skills: skillsData, isLoading: isSkillsLoading } = useSkills();
   const { data: contactInfo, isLoading: isContactLoading } = useContact();
-
-  const { scrollY } = useScroll();
-
-  // Professional fluidity: Optimized scroll transformations
-  // Smoother transition with subtle scale and blur for high-end feel
-  // Simplified, high-performance scroll effects
-  const heroOpacity = useTransform(scrollY, [0, 150], [1, 0.4]);
-  const contentY = useTransform(scrollY, [0, 150], [0, 15]);
-  const bgTextX = useTransform(scrollY, [0, 500], [0, -40]);
 
   // Combine all skills from different categories in the dashboard
   const skills = useMemo(() => {
@@ -207,7 +231,6 @@ export function HomePage() {
           aria-hidden="true"
         >
           <motion.div
-            style={{ x: bgTextX, willChange: "transform" }}
             className="absolute top-[10%] md:top-[15%] left-[-5%] md:left-[-2%] whitespace-nowrap"
           >
             <span className="text-[15vw] md:text-[12vw] font-black text-primary/[0.03] dark:text-primary/[0.02] uppercase tracking-tighter leading-none select-none transition-colors duration-500">
@@ -224,11 +247,6 @@ export function HomePage() {
 
         <div className="relative z-10 w-full">
           <motion.div
-            style={{
-              opacity: heroOpacity,
-              y: contentY,
-              willChange: "transform, opacity"
-            }}
             className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 md:gap-16 lg:gap-24 items-center"
           >
             {/* Left Content - Improved Mobile Layout */}
@@ -424,14 +442,16 @@ export function HomePage() {
                 <motion.div
                   whileHover={{ rotate: -1, scale: 1.01 }}
                   transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                  className="relative h-full w-full rounded-[2.5rem] xs:rounded-[3rem] lg:rounded-[4rem] overflow-hidden border-[6px] md:border-[8px] lg:border-[12px] border-white dark:border-background shadow-2xl z-10 isolation-isolate"
+                  className="relative h-full w-full rounded-[2.5rem] xs:rounded-[3rem] lg:rounded-[4rem] border-[6px] md:border-[8px] lg:border-[12px] border-white dark:border-background shadow-2xl z-10 isolation-isolate"
                 >
-                  <ImageWithFallback
-                    src={homeContent?.profile_pic || ""}
-                    alt={homeContent?.name || "Professional Profile"}
-                    className="img-responsive grayscale-[0.1] group-hover/hero-right:grayscale-0 transition-all duration-1000 scale-100 group-hover/hero-right:scale-110 rounded-[inherit]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 transition-opacity duration-500 group-hover/hero-right:opacity-40" />
+                  <div className="relative h-full w-full overflow-hidden rounded-[inherit]">
+                    <ImageWithFallback
+                      src={homeContent?.profile_pic || ""}
+                      alt={homeContent?.name || "Professional Profile"}
+                      className="img-responsive grayscale-[0.1] group-hover/hero-right:grayscale-0 transition-all duration-1000 scale-100 group-hover/hero-right:scale-110 rounded-[inherit]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 transition-opacity duration-500 group-hover/hero-right:opacity-40" />
+                  </div>
 
                   {/* Enhanced Polaroid Section */}
                   <div className="absolute inset-x-0 bottom-0 z-30 transform translate-y-0 sm:translate-y-1/4">
@@ -489,7 +509,8 @@ export function HomePage() {
                     <motion.div
                       whileHover={{ scale: 1.15, rotate: -15 }}
                       whileTap={{ scale: 0.9 }}
-                      className="relative w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-background/80 dark:bg-black/80 backdrop-blur-md border border-accent/30 shadow-lg shadow-accent/10 group-hover/rocket:border-accent group-hover/rocket:shadow-accent/30 transition-all duration-300 touch-target focus-ring"
+                      onClick={handleRocketClick}
+                      className="relative w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-background/80 dark:bg-black/80 backdrop-blur-md border border-accent/30 shadow-lg shadow-accent/10 group-hover/rocket:border-accent group-hover/rocket:shadow-accent/30 transition-all duration-300 touch-target focus-ring cursor-pointer"
                     >
                       <Rocket className="w-5 h-5 xs:w-6 xs:h-6 sm:w-7 sm:h-7 text-accent animate-bounce" />
                     </motion.div>
@@ -533,7 +554,6 @@ export function HomePage() {
 
         {/* Minimalist Scroll Indicator */}
         <motion.div
-          style={{ opacity: heroOpacity }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-3"
         >
           <span className="text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground/20">

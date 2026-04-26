@@ -18,6 +18,17 @@ const MessageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    budget: {
+      type: String,
+    },
+    timeline: {
+      type: String,
+    },
+    status: {
+      type: String,
+      enum: ["unread", "read", "archived"],
+      default: "unread",
+    },
     read: {
       type: Boolean,
       default: false,

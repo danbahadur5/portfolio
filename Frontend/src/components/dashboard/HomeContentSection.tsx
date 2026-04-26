@@ -186,9 +186,9 @@ export function HomeContentSection() {
             <div className="flex-shrink-0 w-full md:w-48 space-y-4">
               <Label className="mb-2 block">Profile Picture</Label>
               <div className="flex flex-col items-center space-y-4">
-                <Avatar className="w-32 h-32 border-2 border-border">
-                  <AvatarImage src={editData?.profile_pic} />
-                  <AvatarFallback>
+                <Avatar className="w-32 h-32 border-2 border-border mb-2">
+                  <AvatarImage src={editData?.profile_pic} className="object-cover" />
+                  <AvatarFallback className="bg-muted text-2xl">
                     {editData?.name?.charAt(0) || "U"}
                   </AvatarFallback>
                 </Avatar>
@@ -216,9 +216,9 @@ export function HomeContentSection() {
                       </div>
                     </div>
 
-                    <div className="flex justify-center">
-                      <label className="cursor-pointer">
-                        <Button variant="outline" size="sm" asChild>
+                    <div className="flex justify-center pt-2">
+                      <label className="cursor-pointer group">
+                        <Button variant="outline" size="sm" asChild className="group-hover:bg-primary/5 group-hover:text-primary transition-colors">
                           <span>
                             <Upload className="w-4 h-4 mr-2" />
                             {selectedFile ? "Change File" : "Upload File"}

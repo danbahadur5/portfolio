@@ -34,9 +34,9 @@ const PolaroidFrame: React.FC<PolaroidProps> = ({ text, rotation, bgGradient, de
       aria-label={label}
     >
       {/* Polaroid Container */}
-      <div className="bg-white p-0.5 sm:p-2 pb-3 sm:pb-8 shadow-xl shadow-black/10 group-hover:shadow-2xl group-hover:shadow-black/20 transition-shadow duration-300">
+      <div className="bg-white p-1 sm:p-2 pb-4 sm:pb-8 shadow-xl shadow-black/10 group-hover:shadow-2xl group-hover:shadow-black/20 transition-shadow duration-300">
         {/* Photo Area */}
-        <div className={`aspect-[4/1] sm:aspect-square w-full ${bgGradient} relative overflow-hidden flex items-center justify-center p-1 sm:p-4 text-center`}>
+        <div className={`aspect-square w-20 xs:w-24 sm:w-40 ${bgGradient} relative overflow-hidden flex items-center justify-center p-2 sm:p-4 text-center`}>
           {/* Subtle Texture Overlay */}
           <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/paper-fibers.png')] pointer-events-none" />
           
@@ -88,18 +88,17 @@ export const PolaroidFrames: React.FC<{ name?: string; position?: string }> = ({
   ];
 
   return (
-    <div className="flex sm:grid sm:grid-cols-3 gap-3 sm:gap-6 items-center justify-center max-w-2xl mx-auto px-0 sm:px-4 py-1 sm:py-8">
+    <div className="flex items-center justify-center w-full px-0 -space-x-4 sm:-space-x-8 py-4 sm:py-6 relative z-30">
       {frames.map((frame, index) => {
-        // Only show the name frame (index 2) on mobile
-        const isNameFrame = index === 2;
+        // Show all frames on mobile now since we are overlapping
         return (
           <div 
             key={index} 
-            className={`
-              ${isNameFrame ? "flex" : "hidden sm:flex"} 
-              ${index === 2 ? "sm:col-span-1" : ""}
-              w-full justify-center
-            `}
+            className="flex w-auto justify-center"
+            style={{ 
+              zIndex: index,
+              marginLeft: index === 0 ? 0 : undefined 
+            }}
           >
             <PolaroidFrame
               {...frame}

@@ -23,6 +23,7 @@ import { LoadingSpinner } from "../LoadingSpinner";
 import { useForm } from "react-hook-form";
 import api from "../../utils/api";
 import { Layout } from "../Layout";
+import confetti from "canvas-confetti";
 
 interface FormData {
   name: string;
@@ -45,9 +46,12 @@ export function ContactPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     reset,
-  } = useForm<FormData>();
+    trigger,
+  } = useForm<FormData>({
+    mode: "onChange",
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,15 +85,46 @@ export function ContactPage() {
     setIsSubmitting(true);
 
     try {
-      await api.post("/api/sendmessage", data);
+      await api.post("/api/messages", data);
       setSubmitStatus("success");
+      
+      // Effective way: Enhanced success effect with confetti
+      const duration = 5 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+
+      const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+      const interval: any = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+        
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+          colors: ['#22c55e', '#4ade80', '#86efac'], // Success green colors
+        });
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+          colors: ['#3b82f6', '#60a5fa', '#93c5fd'], // Professional blue colors
+        });
+      }, 250);
+
       reset();
     } catch (error) {
       console.error("Failed to send message:", error);
       setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);
-      setTimeout(() => setSubmitStatus("idle"), 5000);
+      setTimeout(() => setSubmitStatus("idle"), 8000); // Longer success message display
     }
   };
 
@@ -249,6 +284,10 @@ export function ContactPage() {
                               id="name"
                               {...register("name", {
                                 required: "Name is required",
+                                minLength: {
+                                  value: 2,
+                                  message: "Name must be at least 2 characters",
+                                },
                               })}
                               placeholder="e.g. John Doe"
                               aria-invalid={errors.name ? "true" : "false"}
@@ -308,6 +347,10 @@ export function ContactPage() {
                             id="subject"
                             {...register("subject", {
                               required: "Subject is required",
+                              minLength: {
+                                value: 3,
+                                message: "Subject must be at least 3 characters",
+                              },
                             })}
                             placeholder="What can I help you with?"
                             aria-invalid={errors.subject ? "true" : "false"}
@@ -390,6 +433,10 @@ export function ContactPage() {
                             id="message"
                             {...register("message", {
                               required: "Message is required",
+                              minLength: {
+                                value: 10,
+                                message: "Message must be at least 10 characters",
+                              },
                             })}
                             placeholder="Describe your vision, goals, and any specific requirements..."
                             aria-invalid={errors.message ? "true" : "false"}

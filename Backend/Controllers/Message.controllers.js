@@ -13,13 +13,15 @@ export const createMessage = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(error.details[0].message, 400));
   }
 
-  const { name, email, subject, message } = sanitizedData;
+  const { name, email, subject, message, budget, timeline } = sanitizedData;
 
   const newMessage = await Message.create({
     name,
     email,
     subject,
     message,
+    budget,
+    timeline,
   });
 
   res.status(201).json({
