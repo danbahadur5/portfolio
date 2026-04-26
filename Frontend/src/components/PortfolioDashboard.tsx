@@ -340,9 +340,9 @@ export function PortfolioDashboard() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-slate-50 dark:bg-slate-950 no-scrollbar overflow-hidden">
-        <Sidebar collapsible="icon" className="border-r border-slate-200 dark:border-slate-800 no-scrollbar">
-          <SidebarHeader className="h-16 flex items-center px-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+      <div className="flex h-screen w-full bg-slate-50 dark:bg-slate-950 overflow-hidden">
+        <Sidebar collapsible="icon" className="border-r border-slate-200 dark:border-slate-800">
+          <SidebarHeader className="h-16 flex items-center px-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
             <div className="flex items-center gap-1">
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-md shadow-primary/10">
                 <Shield className="h-4 w-4 text-primary-foreground" />
@@ -353,42 +353,58 @@ export function PortfolioDashboard() {
             </div>
           </SidebarHeader>
 
-          <SidebarContent className="px-2 py-4 no-scrollbar">
+          <SidebarContent className="px-2 py-4 overflow-y-auto no-scrollbar">
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu className="gap-1">
-                  {filteredMenuItems.map((item) => (
-                    <SidebarMenuItem key={item.id}>
-                      <TooltipProvider delayDuration={0}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <SidebarMenuButton
-                              isActive={location.pathname === `/dashboard/${item.id}` || (location.pathname === "/dashboard" && item.id === "dashboard")}
-                              onClick={() => navigate(`/dashboard/${item.id === "dashboard" ? "" : item.id}`)}
-                              className="h-10 rounded-md cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 group-data-[state=active]:bg-primary/10 group-data-[state=active]:text-primary"
-                            >
-                              <item.icon className="h-4 w-4" />
-                              <span className="font-bold text-[11px] uppercase tracking-wider">{item.title}</span>
-                              {item.badge && (
-                                <Badge variant="secondary" className="ml-auto h-5 px-1.5 text-[10px] font-bold rounded-full bg-primary/10 text-primary border-none">
-                                  {item.badge}
-                                </Badge>
-                              )}
-                            </SidebarMenuButton>
-                          </TooltipTrigger>
-                          <TooltipContent side="right" className="md:hidden">
-                            {item.title}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </SidebarMenuItem>
-                  ))}
+                  {filteredMenuItems.map((item) => {
+                    const isActive = location.pathname === `/dashboard/${item.id}` || 
+                                    (location.pathname === "/dashboard" && item.id === "dashboard") ||
+                                    (location.pathname === "/dashboard/" && item.id === "dashboard");
+                    return (
+                      <SidebarMenuItem key={item.id}>
+                        <TooltipProvider delayDuration={0}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <SidebarMenuButton
+                                isActive={isActive}
+                                onClick={() => navigate(`/dashboard/${item.id === "dashboard" ? "" : item.id}`)}
+                                className={`h-10 rounded-md cursor-pointer transition-all duration-200 group/item ${
+                                  isActive 
+                                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:bg-primary/90" 
+                                    : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                                }`}
+                              >
+                                <item.icon className={`h-4 w-4 ${isActive ? "text-primary-foreground" : "group-hover/item:text-primary transition-colors"}`} />
+                                <span className="font-bold text-[11px] uppercase tracking-wider">{item.title}</span>
+                                {item.badge && (
+                                  <Badge 
+                                    variant="secondary" 
+                                    className={`ml-auto h-5 px-1.5 text-[10px] font-bold rounded-full border-none ${
+                                      isActive 
+                                        ? "bg-white/20 text-white" 
+                                        : "bg-primary/10 text-primary"
+                                    }`}
+                                  >
+                                    {item.badge}
+                                  </Badge>
+                                )}
+                              </SidebarMenuButton>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="md:hidden">
+                              {item.title}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter className="p-3 mt-auto border-t border-slate-200 dark:border-slate-800">
+          <SidebarFooter className="p-3 mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
                 <Avatar className="h-8 w-8 ring-2 ring-background">

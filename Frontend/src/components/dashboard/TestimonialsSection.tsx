@@ -40,6 +40,7 @@ import {
   X,
   Quote,
   Loader2,
+  Upload,
   Image as ImageIcon,
   ExternalLink,
 } from "lucide-react";

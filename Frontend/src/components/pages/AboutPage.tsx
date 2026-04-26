@@ -249,28 +249,7 @@ export function AboutPage() {
                   </TabsTrigger>
                 </TabsList>
 
-                {/* Stats Card */}
-                <div className="p-8 rounded-[2.5rem] bg-card border border-border/50 shadow-sm space-y-6">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Quick Facts</h4>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <div className="text-3xl font-heading font-black">5+</div>
-                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Years Exp.</div>
-                    </div>
-                    <div>
-                      <div className="text-3xl font-heading font-black">50+</div>
-                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Projects</div>
-                    </div>
-                    <div>
-                      <div className="text-3xl font-heading font-black">12+</div>
-                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Client Countries</div>
-                    </div>
-                    <div>
-                      <div className="text-3xl font-heading font-black">∞</div>
-                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Coffee Cups</div>
-                    </div>
-                  </div>
-                </div>
+                
               </div>
 
               {/* Tab Content */}

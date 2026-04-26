@@ -98,7 +98,18 @@
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-br from-primary via-primary/90 to-accent;
   }
-  
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
   /* Mobile-first responsive spacing */
   .responsive-container {
     @apply w-full mx-auto px-4 xs:px-6 md:px-8 lg:px-12 xl:px-16 2xl:max-w-[1440px];

@@ -9,7 +9,7 @@ import { Textarea } from "../ui/textarea";
 import { Label } from "../ui/label";
 import { Badge } from "../ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Plus, Edit3, Trash2, ExternalLink, Github, X, Briefcase } from "lucide-react";
+import { Plus, Edit3, Trash2, ExternalLink, Github, X, Briefcase, Upload } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import {
   Select,
@@ -465,6 +465,7 @@ export function ProjectsSection() {
                     <Label htmlFor="image-upload" className="cursor-pointer">
                       <Button variant="outline" size="sm" asChild>
                         <span>
+                          <Upload className="h-4 w-4 mr-2" />
                           {selectedFile ? "Change File" : "Upload File"}
                         </span>
                       </Button>
