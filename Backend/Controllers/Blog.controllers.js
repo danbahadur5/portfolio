@@ -1,6 +1,8 @@
 import cloudinary from "../Configs/cloudinary.configs.js";
 import { Blog } from "../Models/Blog.models.js";
 import { catchAsyncErrors, ErrorHandler } from "../Middlewares/error.middlewares.js";
+import { blogSchema } from "../utils/validation.js";
+import { sanitize } from "../utils/sanitization.js";
 
 const uploadImage = async (file, options = {}) => {
   if (!file) throw new Error("No file provided");
@@ -20,23 +22,45 @@ const uploadImage = async (file, options = {}) => {
 };
 
 export const createBlog = catchAsyncErrors(async (req, res, next) => {
-  const { title, featured, content, tags } = req.body;
-  if (!req.file) {
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = blogSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
+  const { title, featured, content, tags, featuredImage } = sanitizedData;
+
+  let imageUrl = featuredImage;
+
+  if (req.file) {
+    const savedImage = await uploadImage(req.file, {
+      folder: "blogs",
+    });
+    imageUrl = savedImage.secure_url;
+  }
+
+  if (!imageUrl && !req.file) {
     return next(new ErrorHandler("Image is required", 400));
   }
 
-  const savedImage = await uploadImage(req.file, {
-    folder: "blogs",
-  });
-
   const parsedTags = typeof tags === "string" ? JSON.parse(tags) : tags || [];
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 
   const newBlog = await Blog.create({
     title,
+    slug,
     featured: featured === "true" || featured === true,
     content,
-    image: savedImage.secure_url,
+    featuredImage: imageUrl,
     tags: parsedTags,
+    author: req.user.id,
+    status: "published",
   });
 
   res.status(201).json({
@@ -56,7 +80,17 @@ export const getAllBlogs = catchAsyncErrors(async (req, res, next) => {
 
 export const updateBlog = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
-  const { title, featured, content, tags } = req.body;
+  
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = blogSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
+  const { title, featured, content, tags, featuredImage } = sanitizedData;
 
   let updateData = {
     title,
@@ -65,11 +99,22 @@ export const updateBlog = catchAsyncErrors(async (req, res, next) => {
     tags: typeof tags === "string" ? JSON.parse(tags) : tags || [],
   };
 
+  if (featuredImage) {
+    updateData.featuredImage = featuredImage;
+  }
+
+  if (title) {
+    updateData.slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+  }
+
   if (req.file) {
     const savedImage = await uploadImage(req.file, {
       folder: "blogs",
     });
-    updateData.image = savedImage.secure_url;
+    updateData.featuredImage = savedImage.secure_url;
   }
 
   const blog = await Blog.findByIdAndUpdate(id, updateData, {
@@ -85,6 +130,34 @@ export const updateBlog = catchAsyncErrors(async (req, res, next) => {
     success: true,
     message: "Blog updated successfully",
     blog,
+  });
+});
+
+export const getBlogById = catchAsyncErrors(async (req, res, next) => {
+  const blog = await Blog.findById(req.params.id).populate("author", "name profile_pic");
+  if (!blog) {
+    return next(new ErrorHandler("Blog not found", 404));
+  }
+  res.status(200).json({
+    success: true,
+    blog,
+  });
+});
+
+export const getBlogStats = catchAsyncErrors(async (req, res, next) => {
+  const stats = await Blog.aggregate([
+    {
+      $group: {
+        _id: "$status",
+        count: { $sum: 1 },
+        totalViews: { $sum: "$viewCount" },
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    success: true,
+    stats,
   });
 });
 

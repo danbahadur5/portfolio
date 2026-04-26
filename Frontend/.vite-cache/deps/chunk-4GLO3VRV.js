@@ -1,6 +1,6 @@
 import {
   require_jsx_runtime
-} from "./chunk-RZSASJON.js";
+} from "./chunk-QFD2GQ4D.js";
 import {
   require_react
 } from "./chunk-TWJRYSII.js";
@@ -7343,7 +7343,7 @@ var VisualElementDragControls = class {
     }
     frame.read(measureDragConstraints);
     const stopResizeListener = addDomEvent(window, "resize", () => this.scalePositionWithinConstraints());
-    const stopLayoutUpdateListener = projection.addEventListener("didUpdate", (({ delta, hasLayoutChanged }) => {
+    const stopLayoutUpdateListener = projection.addEventListener("didUpdate", ({ delta, hasLayoutChanged }) => {
       if (this.isDragging && hasLayoutChanged) {
         eachAxis((axis) => {
           const motionValue2 = this.getAxisMotionValue(axis);
@@ -7354,7 +7354,7 @@ var VisualElementDragControls = class {
         });
         this.visualElement.render();
       }
-    }));
+    });
     return () => {
       stopResizeListener();
       stopPointerListener();
@@ -11277,4 +11277,4 @@ export {
   useInvertedScale,
   namespace_exports
 };
-//# sourceMappingURL=chunk-CNWI5BUU.js.map
+//# sourceMappingURL=chunk-4GLO3VRV.js.map

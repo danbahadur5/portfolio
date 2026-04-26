@@ -38,15 +38,38 @@
   --radius-2xl: 1.5rem;
   --radius-3xl: 2rem;
   --radius-4xl: 3rem;
+
+  /* Custom Responsive Breakpoints */
+  --breakpoint-xs: 320px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1440px;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+  html {
+    @apply scroll-smooth antialiased;
+    font-size: 14px; /* Base for 320px */
+  }
+  @media (min-width: 768px) {
+    html {
+      font-size: 15px; /* Base for 768px */
+    }
+  }
+  @media (min-width: 1024px) {
+    html {
+      font-size: 16px; /* Base for 1024px */
+    }
+  }
   body {
-    @apply bg-background text-foreground font-sans antialiased selection:bg-primary/20 selection:text-primary;
+    @apply bg-background text-foreground font-sans selection:bg-primary/20 selection:text-primary overflow-x-hidden;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+    text-rendering: optimizeLegibility;
   }
   h1,
   h2,
@@ -59,6 +82,13 @@
 }
 
 @layer utilities {
+  /* Fluid Grid System */
+  .fluid-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: clamp(1rem, 5vw, 2.5rem);
+  }
+
   .glass {
     @apply bg-background/70 backdrop-blur-2xl border border-white/10;
   }
@@ -68,27 +98,22 @@
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-br from-primary via-primary/90 to-accent;
   }
-  .bento-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 2rem;
-  }
-  .hero-mask {
-    mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+  
+  /* Mobile-first responsive spacing */
+  .responsive-container {
+    @apply w-full mx-auto px-4 xs:px-6 md:px-8 lg:px-12 xl:px-16 2xl:max-w-[1440px];
   }
 
-  /* Mobile-first responsive utilities */
-  .mobile-padding {
-    @apply px-4 sm:px-6 lg:px-8;
+  .responsive-section {
+    @apply py-12 md:py-20 lg:py-24 xl:py-32;
   }
-  .mobile-margin {
-    @apply mx-4 sm:mx-6 lg:mx-8;
+
+  .responsive-text-body {
+    @apply text-sm md:text-base lg:text-lg;
   }
-  .mobile-text {
-    @apply text-sm sm:text-base lg:text-lg;
-  }
-  .mobile-heading {
-    @apply text-2xl sm:text-3xl lg:text-4xl xl:text-5xl;
+
+  .responsive-heading-hero {
+    @apply text-4xl xs:text-5xl md:text-6xl lg:text-7xl xl:text-8xl;
   }
 
   /* Focus states for accessibility */
@@ -98,7 +123,12 @@
 
   /* Touch targets for mobile */
   .touch-target {
-    @apply min-h-[44px] min-w-[44px];
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+
+  /* Flexible Images */
+  .img-responsive {
+    @apply w-full h-auto object-cover;
   }
 }
 

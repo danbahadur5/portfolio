@@ -6,11 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, X, Edit3, Check, Loader2 } from "lucide-react";
 import api from "../../utils/api";
 import { toast } from "react-toastify";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface Skills {
   technical: string[];
   languages: string[];
   frameworks: string[];
+  tools: string[];
   _id?: string;
 }
 
@@ -26,6 +28,11 @@ const skillCategories = [
     description: "Development frameworks and libraries",
   },
   {
+    key: "tools" as keyof Skills,
+    label: "Tools",
+    description: "Development tools and software",
+  },
+  {
     key: "languages" as keyof Skills,
     label: "Languages",
     description: "Spoken languages",
@@ -33,6 +40,7 @@ const skillCategories = [
 ];
 
 export function SkillsSection() {
+  const { hasPermission } = useAuth();
   const backend = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
   const [data, setData] = useState<Skills | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -40,14 +48,19 @@ export function SkillsSection() {
     technical: [],
     languages: [],
     frameworks: [],
+    tools: [],
   });
   const [newSkills, setNewSkills] = useState<Record<keyof Skills, string>>({
     technical: "",
     languages: "",
     frameworks: "",
+    tools: "",
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  const canEdit = hasPermission("skills", "edit");
+  const canCreate = hasPermission("skills", "create");
 
   useEffect(() => {
     fetchSkills();
@@ -56,14 +69,27 @@ export function SkillsSection() {
   const fetchSkills = async () => {
     try {
       const res = await api.get("/api/getskill");
-      const skillData = res.data.skills?.[0];
+      const rawSkillData = res.data.skills?.[0];
 
-      if (skillData) {
+      const skillData: Skills = {
+        technical: Array.isArray(rawSkillData?.technical) ? rawSkillData.technical : [],
+        languages: Array.isArray(rawSkillData?.languages) ? rawSkillData.languages : [],
+        frameworks: Array.isArray(rawSkillData?.frameworks) ? rawSkillData.frameworks : [],
+        tools: Array.isArray(rawSkillData?.tools) ? rawSkillData.tools : [],
+        _id: rawSkillData?._id
+      };
+
+      if (rawSkillData) {
         setData(skillData);
         setEditData(skillData);
       } else {
         setData(null);
-        setEditData({ technical: [], languages: [], frameworks: [] });
+        setEditData({
+          technical: [],
+          languages: [],
+          frameworks: [],
+          tools: [],
+        });
         setIsEditing(true);
       }
     } catch (error: any) {
@@ -76,16 +102,15 @@ export function SkillsSection() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    const token = localStorage.getItem("token");
 
     try {
       let res;
       if (data?._id) {
         // Update existing skills
-        res = await api.put(`/api/updateskill/${data._id}`, editData);
+        res = await api.put(`/api/skills/${data._id}`, editData);
       } else {
         // Create new skills
-        res = await api.post("/api/createskill", editData);
+        res = await api.post("/api/skills", editData);
       }
 
       setData(res.data.skill);
@@ -136,6 +161,7 @@ export function SkillsSection() {
     technical: [],
     languages: [],
     frameworks: [],
+    tools: [],
   };
 
   if (isLoading) {
@@ -154,19 +180,21 @@ export function SkillsSection() {
         <div className="flex gap-2">
           {isEditing ? (
             <>
-              <Button onClick={handleSave} size="sm" disabled={isSaving}>
-                {isSaving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Check className="h-4 w-4 mr-2" />
-                    Save
-                  </>
-                )}
-              </Button>
+              {(data?._id ? canEdit : canCreate) && (
+                <Button onClick={handleSave} size="sm" disabled={isSaving}>
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="h-4 w-4 mr-2" />
+                      Save
+                    </>
+                  )}
+                </Button>
+              )}
               {data && (
                 <Button
                   onClick={handleCancel}
@@ -180,10 +208,12 @@ export function SkillsSection() {
               )}
             </>
           ) : (
-            <Button onClick={() => setIsEditing(true)} size="sm">
-              <Edit3 className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
+            (data?._id ? canEdit : canCreate) && (
+              <Button onClick={() => setIsEditing(true)} size="sm">
+                <Edit3 className="h-4 w-4 mr-2" />
+                {data?._id ? "Edit" : "Create"}
+              </Button>
+            )
           )}
         </div>
       </div>

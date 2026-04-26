@@ -12,7 +12,11 @@ export const useAbout = () => {
       setIsLoading(true);
       setError(null);
       const res = await api.get('/api/getabout');
-      setData(res.data.about?.[0] || null);
+      // Handle both object and array response from backend
+      const aboutData = Array.isArray(res.data.about) 
+        ? res.data.about[0] 
+        : res.data.about;
+      setData(aboutData || null);
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || 'Failed to fetch about data';
       setError(new Error(errorMsg));

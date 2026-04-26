@@ -1,24 +1,36 @@
 import { Skill } from "../Models/Skills.models.js";
 import { catchAsyncErrors, ErrorHandler } from "../Middlewares/error.middlewares.js";
+import { skillSchema } from "../utils/validation.js";
+import { sanitize } from "../utils/sanitization.js";
 
 const parseJsonIfNeeded = (data) => {
   if (typeof data === "string") {
     try {
       return JSON.parse(data);
     } catch (e) {
-      return data.split(",").map(s => s.trim());
+      return data.split(",").map((s) => s.trim());
     }
   }
   return data || [];
 };
 
 export const createSkill = catchAsyncErrors(async (req, res, next) => {
-  const { technical, languages, frameworks } = req.body;
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = skillSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
+  const { technical, languages, frameworks, tools } = sanitizedData;
 
   const skill = await Skill.create({
     technical: parseJsonIfNeeded(technical),
     languages: parseJsonIfNeeded(languages),
     frameworks: parseJsonIfNeeded(frameworks),
+    tools: parseJsonIfNeeded(tools),
   });
 
   res.status(201).json({
@@ -38,7 +50,17 @@ export const getSkill = catchAsyncErrors(async (req, res, next) => {
 
 export const updateSkill = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
-  const { technical, languages, frameworks } = req.body;
+
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = skillSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
+  const { technical, languages, frameworks, tools } = sanitizedData;
 
   const skill = await Skill.findByIdAndUpdate(
     id,
@@ -46,6 +68,7 @@ export const updateSkill = catchAsyncErrors(async (req, res, next) => {
       technical: parseJsonIfNeeded(technical),
       languages: parseJsonIfNeeded(languages),
       frameworks: parseJsonIfNeeded(frameworks),
+      tools: parseJsonIfNeeded(tools),
     },
     { new: true, runValidators: true }
   );

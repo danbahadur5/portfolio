@@ -1,6 +1,8 @@
 import cloudinary from "../Configs/cloudinary.configs.js";
 import { HomeContent } from "../Models/HomeContent.models.js";
 import { catchAsyncErrors, ErrorHandler } from "../Middlewares/error.middlewares.js";
+import { homeContentSchema } from "../utils/validation.js";
+import { sanitize } from "../utils/sanitization.js";
 
 const uploadImage = async (file, options = {}) => {
   if (!file) throw new Error("No file provided");
@@ -20,13 +22,27 @@ const uploadImage = async (file, options = {}) => {
 };
 
 export const createHomeContent = catchAsyncErrors(async (req, res, next) => {
-  const { name, location, position, summary, description } = req.body;
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
 
-  if (!req.file) {
-    return next(new ErrorHandler("Profile picture is required", 400));
+  // 2. Validate input
+  const { error } = homeContentSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
   }
 
-  const cloud_save = await uploadImage(req.file);
+  const { name, location, position, summary, description, profile_pic, cvUrl, availableForWork } = sanitizedData;
+
+  let profilePicUrl = profile_pic;
+
+  if (req.file) {
+    const cloud_save = await uploadImage(req.file, { folder: "home" });
+    profilePicUrl = cloud_save.secure_url;
+  }
+
+  if (!profilePicUrl && !req.file) {
+    return next(new ErrorHandler("Profile picture is required", 400));
+  }
 
   const homeContent = await HomeContent.create({
     name,
@@ -34,7 +50,9 @@ export const createHomeContent = catchAsyncErrors(async (req, res, next) => {
     position,
     summary,
     description,
-    profile_pic: cloud_save.secure_url,
+    profile_pic: profilePicUrl,
+    cvUrl,
+    availableForWork,
   });
 
   res.status(201).json({ 
@@ -54,12 +72,26 @@ export const getHomeContent = catchAsyncErrors(async (req, res, next) => {
 
 export const updateHomeContent = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
-  const { name, location, position, summary, description } = req.body;
 
-  let updateData = { name, location, position, summary, description };
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = homeContentSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
+  const { name, location, position, summary, description, profile_pic, cvUrl, availableForWork } = sanitizedData;
+
+  let updateData = { name, location, position, summary, description, cvUrl, availableForWork };
+
+  if (profile_pic) {
+    updateData.profile_pic = profile_pic;
+  }
 
   if (req.file) {
-    const cloud_save = await uploadImage(req.file);
+    const cloud_save = await uploadImage(req.file, { folder: "home" });
     updateData.profile_pic = cloud_save.secure_url;
   }
 

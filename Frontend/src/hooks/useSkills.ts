@@ -12,7 +12,7 @@ export const useSkills = () => {
       setIsLoading(true);
       setError(null);
       const res = await api.get('/api/getskill');
-      setSkills(res.data.skill?.[0] || null);
+      setSkills(res.data.skills?.[0] || null);
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || 'Failed to fetch skills';
       setError(new Error(errorMsg));

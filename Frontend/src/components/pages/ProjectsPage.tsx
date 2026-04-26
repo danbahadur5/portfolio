@@ -5,10 +5,8 @@ import {
   Github,
   Calendar,
   Clock,
-  Filter,
-  Grid,
-  List,
   Link,
+  Rocket,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
@@ -17,13 +15,13 @@ import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { SearchFilter } from "../SearchFilter";
 import { LoadingSpinner } from "../LoadingSpinner";
 import { useProjects } from "@/hooks/useProjects";
+import { Layout } from "../Layout";
 
 export function ProjectsPage() {
   const { projects, isLoading, error } = useProjects();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedTech, setSelectedTech] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "name">("newest");
 
   // Get unique categories and technologies
@@ -37,7 +35,7 @@ export function ProjectsPage() {
   const technologies = useMemo(
     () =>
       Array.from(
-        new Set(projects?.flatMap((p) => p.technologies) || []),
+        new Set(projects?.flatMap((p) => p.technologies || []) || []),
       ).sort(),
     [projects],
   );
@@ -53,7 +51,7 @@ export function ProjectsPage() {
         selectedCategory === "All" || project.category === selectedCategory;
       const matchesTech =
         selectedTech.length === 0 ||
-        selectedTech.every((tech) => project.technologies.includes(tech));
+        selectedTech.every((tech) => (project.technologies || []).includes(tech));
 
       return matchesSearch && matchesCategory && matchesTech;
     });
@@ -85,93 +83,67 @@ export function ProjectsPage() {
 
   if (isLoading && projects.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <LoadingSpinner size="lg" />
-      </div>
+      <Layout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <LoadingSpinner size="lg" />
+        </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <Layout>
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[100px]" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-[100px]" />
+      <section className="relative responsive-section overflow-hidden">
+        {/* Background Decorative Layer */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
+          <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[50%] bg-primary/5 rounded-full blur-[100px] animate-pulse" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[40%] bg-accent/5 rounded-full blur-[80px] animate-pulse delay-700" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto text-center">
+        <div className="relative z-10 responsive-container">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center"
           >
-            <h1 className="text-5xl md:text-7xl font-heading font-black tracking-tighter mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-6 border border-primary/20 backdrop-blur-sm touch-target">
+              <Rocket className="w-3.5 h-3.5" />
+              Engineering Showcase
+            </div>
+            <h1 className="responsive-heading-hero font-heading font-black tracking-tighter mb-6 leading-[0.95]">
               Selected <span className="text-gradient">Projects</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-light leading-relaxed">
-              A curated showcase of engineering excellence, combining
-              performance with intuitive design.
+            <p className="responsive-text-body text-muted-foreground font-medium leading-relaxed max-w-2xl mx-auto mb-12 md:mb-16">
+              A curated showcase of <span className="text-foreground font-bold">engineering excellence</span>, combining high-performance with <span className="text-foreground font-bold">intuitive design</span>.
             </p>
           </motion.div>
-        </div>
-      </section>
 
-      {/* Filters Section */}
-      <section className="sticky top-20 z-30 py-4 lg:py-6 px-4 lg:px-6 glass border-y border-border/50">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 lg:gap-6">
-          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 w-full lg:w-auto">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 lg:px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 whitespace-nowrap ${
-                  selectedCategory === category
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                    : "hover:bg-accent text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-3 lg:gap-4 w-full lg:w-auto">
-            <div className="relative flex-grow lg:flex-grow-0 min-w-0">
-              <SearchFilter
-                onSearch={handleSearch}
-                className="w-full lg:w-64"
-              />
-            </div>
-            <div className="flex p-1 bg-muted rounded-xl flex-shrink-0">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-background shadow-sm text-primary" : "text-muted-foreground"}`}
-              >
-                <Grid className="w-4 h-4 lg:w-5 lg:h-5" />
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-background shadow-sm text-primary" : "text-muted-foreground"}`}
-              >
-                <List className="w-4 h-4 lg:w-5 lg:h-5" />
-              </button>
-            </div>
+          <div className="max-w-4xl mx-auto">
+            <SearchFilter
+              searchTerm={searchTerm}
+              onSearchChange={handleSearch}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              categories={categories}
+              selectedTech={selectedTech}
+              onTechChange={setSelectedTech}
+              technologies={technologies}
+              placeholder="Search projects..."
+              className="mb-8 md:mb-12"
+            />
           </div>
         </div>
       </section>
 
       {/* Projects Grid */}
-      <section className="py-12 lg:py-20 px-4 lg:px-6">
-        <div className="max-w-7xl mx-auto">
+      <section className="responsive-section pt-0" aria-label="Projects Listing">
+        <div className="responsive-container">
           <AnimatePresence mode="wait">
             <motion.div
               layout
-              className={
-                viewMode === "grid"
-                  ? "grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
-                  : "space-y-6 lg:space-y-8"
-              }
+              className="fluid-grid"
             >
               {filteredProjects.map((project, index) => (
                 <motion.div
@@ -198,36 +170,37 @@ export function ProjectsPage() {
                           {project.category}
                         </span>
                         {project.featured && (
-                          <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
+                          <Badge className="bg-primary/10 text-primary border-primary/20 text-xs px-3 py-1 rounded-lg font-bold">
                             Featured
                           </Badge>
                         )}
                       </div>
-                      <h3 className="text-xl lg:text-2xl font-bold font-heading mb-3 lg:mb-4 group-hover:text-primary transition-colors">
+                      <h3 className="text-xl lg:text-2xl font-bold font-heading mb-3 lg:mb-4 group-hover:text-primary transition-colors tracking-tight">
                         {project.title}
                       </h3>
-                      <p className="text-sm lg:text-base text-muted-foreground text-sm font-light leading-relaxed mb-6 lg:mb-8 line-clamp-3">
+                      <p className="responsive-text-body text-muted-foreground font-medium leading-relaxed mb-6 lg:mb-8 line-clamp-3">
                         {project.description}
                       </p>
 
                       <div className="flex flex-wrap gap-2 mb-6 lg:mb-8 mt-auto">
-                        {project.technologies.slice(0, 3).map((tech) => (
+                        {(project.technologies || []).slice(0, 3).map((tech) => (
                           <span
                             key={tech}
-                            className="px-3 py-1 rounded-lg bg-accent/50 text-[10px] lg:text-[11px] font-bold text-accent-foreground/60 uppercase tracking-wider"
+                            className="px-3 py-1 rounded-lg bg-primary/5 text-[10px] lg:text-[11px] font-bold text-primary/70 uppercase tracking-wider border border-primary/10"
                           >
                             {tech}
                           </span>
                         ))}
                       </div>
 
-                      <div className="flex items-center gap-3 lg:gap-4 pt-4 lg:pt-6 border-t border-border/30">
+                      <div className="flex items-center gap-4 pt-4 lg:pt-6 border-t border-border/30">
                         {project.liveUrl && (
                           <a
                             href={project.liveUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-sm font-bold text-primary hover:opacity-80 transition-opacity"
+                            className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-all touch-target focus-ring rounded-lg px-2 -ml-2"
+                            aria-label={`Launch live site for ${project.title}`}
                           >
                             <ExternalLink className="w-4 h-4" />
                             Launch
@@ -238,7 +211,8 @@ export function ProjectsPage() {
                             href={project.sourceUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
+                            className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-all touch-target focus-ring rounded-lg px-2"
+                            aria-label={`View source code for ${project.title} on GitHub`}
                           >
                             <Github className="w-4 h-4" />
                             Source
@@ -253,7 +227,7 @@ export function ProjectsPage() {
           </AnimatePresence>
         </div>
       </section>
-    </div>
+    </Layout>
   );
 }
 
@@ -302,12 +276,12 @@ function ProjectCard({ project }: { project: any }) {
           </p>
 
           <div className="flex flex-wrap gap-2 mb-6">
-            {project.technologies.slice(0, 3).map((tech: string) => (
+            {(project.technologies || []).slice(0, 3).map((tech: string) => (
               <Badge key={tech} variant="outline" className="text-xs">
                 {tech}
               </Badge>
             ))}
-            {project.technologies.length > 3 && (
+            {project.technologies && project.technologies.length > 3 && (
               <Badge variant="outline" className="text-xs">
                 +{project.technologies.length - 3} more
               </Badge>
@@ -378,7 +352,7 @@ function ProjectListItem({ project }: { project: any }) {
             </p>
 
             <div className="flex flex-wrap gap-2 mb-6">
-              {project.technologies.map((tech: string) => (
+              {(project.technologies || []).map((tech: string) => (
                 <Badge key={tech} variant="outline" className="text-sm">
                   {tech}
                 </Badge>

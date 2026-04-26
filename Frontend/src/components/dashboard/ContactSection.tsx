@@ -18,6 +18,7 @@ import {
 import api from "../../utils/api";
 import { toast } from "react-toastify";
 import { Label } from "../ui/label";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface ContactData {
   email: string;
@@ -75,6 +76,7 @@ const contactFields = [
 ];
 
 export function ContactSection() {
+  const { hasPermission } = useAuth();
   const backend = import.meta.env.VITE_BACKEND_URL!;
   const [data, setData] = useState<ContactData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -88,6 +90,9 @@ export function ContactSection() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  const canEdit = hasPermission("contact", "edit");
+  const canCreate = hasPermission("contact", "create");
 
   useEffect(() => {
     fetchContact();
@@ -139,12 +144,12 @@ export function ContactSection() {
       if (data?._id) {
         // Update existing contact
         console.log("Updating contact with ID:", data._id);
-        res = await api.put(`/api/updatecontact/${data._id}`, editData);
+        res = await api.put(`/api/contact/${data._id}`, editData);
         console.log("Update response:", res.data);
       } else {
         // Create new contact
         console.log("Creating new contact");
-        res = await api.post("/api/createcontact", editData);
+        res = await api.post("/api/contact", editData);
         console.log("Create response:", res.data);
       }
 
@@ -193,19 +198,21 @@ export function ContactSection() {
         <div className="flex gap-2">
           {isEditing ? (
             <>
-              <Button onClick={handleSave} size="sm" disabled={isSaving}>
-                {isSaving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Check className="h-4 w-4 mr-2" />
-                    Save
-                  </>
-                )}
-              </Button>
+              {(data?._id ? canEdit : canCreate) && (
+                <Button onClick={handleSave} size="sm" disabled={isSaving}>
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="h-4 w-4 mr-2" />
+                      Save
+                    </>
+                  )}
+                </Button>
+              )}
               {data && (
                 <Button
                   onClick={handleCancel}
@@ -219,10 +226,12 @@ export function ContactSection() {
               )}
             </>
           ) : (
-            <Button onClick={() => setIsEditing(true)} size="sm">
-              <Edit3 className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
+            (data?._id ? canEdit : canCreate) && (
+              <Button onClick={() => setIsEditing(true)} size="sm">
+                <Edit3 className="h-4 w-4 mr-2" />
+                {data?._id ? "Edit" : "Create"}
+              </Button>
+            )
           )}
         </div>
       </div>

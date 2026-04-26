@@ -7,22 +7,24 @@ import { Textarea } from "../ui/textarea";
 import { Label } from "../ui/label";
 import { Badge } from "../ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Plus, Edit3, Trash2, Calendar, Tag, X, Loader2 } from "lucide-react";
+import { Plus, Edit3, Trash2, Calendar, Tag, X, Loader2, FileText } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { Switch } from "../ui/switch";
 import api from "../../utils/api";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface Blog {
   _id?: string;
   title: string;
   featured: boolean;
   content: string;
-  image: string;
+  featuredImage: string;
   tags: string[];
   createdAt?: string;
 }
 
 export function BlogsSection() {
+  const { hasPermission } = useAuth();
   const backend = import.meta.env.VITE_BACKEND_URL!;
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [newBlog, setNewBlog] = useState<Blog | null>(null);
@@ -31,6 +33,10 @@ export function BlogsSection() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  const canCreate = hasPermission("blog", "create");
+  const canEdit = hasPermission("blog", "edit");
+  const canDelete = hasPermission("blog", "delete");
 
   useEffect(() => {
     fetchBlogs();
@@ -53,7 +59,7 @@ export function BlogsSection() {
       title: "",
       featured: false,
       content: "",
-      image: "",
+      featuredImage: "",
       tags: [],
     });
     setSelectedFile(null);
@@ -70,7 +76,7 @@ export function BlogsSection() {
     if (!id) return;
 
     try {
-      const res = await api.delete(`/api/deleteblog/${id}`);
+      const res = await api.delete(`/api/blogs/${id}`);
 
       toast.success(res.data.message);
       setBlogs(blogs.filter((b) => b._id !== id));
@@ -85,7 +91,6 @@ export function BlogsSection() {
     if (!newBlog) return;
 
     setIsSaving(true);
-    const token = localStorage.getItem("token");
 
     try {
       const formData = new FormData();
@@ -96,13 +101,15 @@ export function BlogsSection() {
 
       if (selectedFile) {
         formData.append("image", selectedFile);
+      } else if (newBlog.featuredImage) {
+        formData.append("featuredImage", newBlog.featuredImage);
       }
 
       let res;
       if (newBlog._id) {
         // Update blog
         console.log("Updating blog with ID:", newBlog._id);
-        res = await api.put(`/api/updateblog/${newBlog._id}`, formData, {
+        res = await api.put(`/api/blogs/${newBlog._id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -112,14 +119,14 @@ export function BlogsSection() {
         setBlogs(blogs.map((b) => (b._id === newBlog._id ? res.data.blog : b)));
       } else {
         // Create blog
-        if (!selectedFile) {
+        if (!selectedFile && !newBlog.featuredImage) {
           toast.error("Blog image is required");
           setIsSaving(false);
           return;
         }
 
         console.log("Creating new blog");
-        res = await api.post("/api/createblog", formData, {
+        res = await api.post("/api/blogs", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -145,7 +152,7 @@ export function BlogsSection() {
     if (e.target.files && e.target.files[0]) {
       setSelectedFile(e.target.files[0]);
       if (newBlog) {
-        setNewBlog({ ...newBlog, image: e.target.files[0].name });
+        setNewBlog({ ...newBlog, featuredImage: e.target.files[0].name });
       }
     }
   }
@@ -178,111 +185,115 @@ export function BlogsSection() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-semibold">Blogs</h2>
-        <Button onClick={handleAddBlog}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Blog
-        </Button>
+    <div className="space-y-8 pb-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            Articles
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            Write and publish blog posts to your site.
+          </p>
+        </div>
+        {canCreate && (
+          <Button 
+            onClick={handleAddBlog}
+            className="h-10 rounded-xl shadow-lg shadow-primary/20"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Create Article
+          </Button>
+        )}
       </div>
 
-      {/* Blogs Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {blogs.map((blog) => (
-          <Card key={blog._id} className="overflow-hidden">
-            <div className="relative h-48 bg-muted">
-              {blog.image ? (
-                <ImageWithFallback
-                  src={blog.image}
-                  alt={blog.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                  No Image
-                </div>
-              )}
-              {blog.featured && (
-                <div className="absolute top-2 right-2">
-                  <Badge className="bg-yellow-500 text-white">
-                    ⭐ Featured
-                  </Badge>
-                </div>
-              )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {blogs.length === 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center py-32 bg-white dark:bg-slate-900 rounded-3xl ring-1 ring-slate-200/50 dark:ring-slate-800/50">
+            <div className="h-16 w-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+              <FileText className="h-8 w-8 text-slate-400" />
             </div>
-            <CardContent className="p-4">
-              <h3 className="font-semibold mb-2">{blog.title}</h3>
-              <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-                {blog.content}
-              </p>
-
-              <div className="flex flex-wrap gap-1 mb-4 min-h-[24px]">
-                {blog.tags && blog.tags.length > 0 ? (
-                  <>
-                    {blog.tags.slice(0, 3).map((tag: string, idx) => (
-                      <Badge
-                        key={`${tag}-${idx}`}
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        <Tag className="h-3 w-3 mr-1" />
-                        {tag}
-                      </Badge>
-                    ))}
-                    {blog.tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{blog.tags.length - 3}
-                      </Badge>
-                    )}
-                  </>
+            <h3 className="text-lg font-bold">No articles yet</h3>
+            <p className="text-sm text-slate-500 mt-1">Share your thoughts with the world.</p>
+          </div>
+        ) : (
+          blogs.map((blog) => (
+            <Card key={blog._id} className="group border-none shadow-sm bg-white dark:bg-slate-900 ring-1 ring-slate-200/50 dark:ring-slate-800/50 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/50 rounded-2xl">
+              <div className="relative h-48 overflow-hidden">
+                {blog.featuredImage ? (
+                  <ImageWithFallback
+                    src={blog.featuredImage}
+                    alt={blog.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
                 ) : (
-                  <span className="text-xs text-muted-foreground italic">
-                    No tags
-                  </span>
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-400">
+                    <FileText className="h-10 w-10 mb-2 opacity-20" />
+                    <span className="text-xs font-bold uppercase tracking-widest opacity-50">No Image</span>
+                  </div>
                 )}
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {blog.createdAt
-                    ? new Date(blog.createdAt).toLocaleDateString()
-                    : "N/A"}
-                </span>
-                <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleEditBlog(blog)}
-                  >
-                    <Edit3 className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDeleteBlog(blog._id)}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                
+                <div className="absolute top-3 left-3">
+                  {blog.featured && (
+                    <Badge className="bg-primary hover:bg-primary text-primary-foreground font-bold text-[10px] px-2 py-0.5 rounded-lg shadow-lg border-none">
+                      FEATURED
+                    </Badge>
+                  )}
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
-      {blogs.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <p className="text-muted-foreground mb-4">No blogs added yet</p>
-            <Button onClick={handleAddBlog}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Your First Blog
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                  <Calendar className="h-3 w-3" />
+                  {blog.createdAt ? new Date(blog.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' }) : "Recently"}
+                </div>
+
+                <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors line-clamp-2 min-h-[3.5rem] leading-snug">
+                  {blog.title}
+                </h3>
+                
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 line-clamp-3 leading-relaxed">
+                  {blog.content}
+                </p>
+
+                <div className="flex flex-wrap gap-1.5 mb-6 min-h-[1.5rem]">
+                  {blog.tags?.slice(0, 3).map((tag: string, idx) => (
+                    <span
+                      key={idx}
+                      className="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1"
+                    >
+                      <Tag className="h-2 w-2" />
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-end gap-2">
+                  {canEdit && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-9 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs"
+                      onClick={() => handleEditBlog(blog)}
+                    >
+                      <Edit3 className="h-4 w-4 mr-2" /> Edit
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-9 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-red-500 hover:text-red-600 font-bold text-xs"
+                      onClick={() => handleDeleteBlog(blog._id!)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" /> Delete
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
 
       {/* Blog Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -341,33 +352,52 @@ export function BlogsSection() {
               </div>
 
               {/* Image Upload */}
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <Label>Blog Image *</Label>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="image-upload" className="cursor-pointer">
-                    <Button variant="outline" size="sm" asChild>
-                      <span>
-                        {selectedFile ? "Change Image" : "Upload Image"}
+                
+                <div className="flex flex-col gap-4 p-4 border rounded-lg bg-muted/30">
+                  <div className="space-y-2">
+                    <Label htmlFor="image-url" className="text-xs">Image URL</Label>
+                    <Input
+                      id="image-url"
+                      value={newBlog.featuredImage}
+                      onChange={(e) =>
+                        setNewBlog({ ...newBlog, featuredImage: e.target.value })
+                      }
+                      placeholder="https://example.com/image.jpg"
+                    />
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">Or upload file</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="image-upload" className="cursor-pointer">
+                      <Button variant="outline" size="sm" asChild>
+                        <span>
+                          {selectedFile ? "Change File" : "Upload File"}
+                        </span>
+                      </Button>
+                    </Label>
+                    <input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    {selectedFile && (
+                      <span className="text-sm text-green-600">
+                        {selectedFile.name}
                       </span>
-                    </Button>
-                  </Label>
-                  <input
-                    id="image-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                  {selectedFile && (
-                    <span className="text-sm text-green-600">
-                      {selectedFile.name}
-                    </span>
-                  )}
-                  {!selectedFile && newBlog.image && (
-                    <span className="text-sm text-muted-foreground">
-                      Current: {newBlog.image}
-                    </span>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
 

@@ -8,18 +8,20 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Upload, Edit3, Check, X, Loader2 } from "lucide-react";
 import api from "../../utils/api";
 import { toast } from "react-toastify";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface AboutData {
   _id?: string;
   name: string;
   title: string;
   bio: string;
-  profileImage: string;
+  profile_pic: string;
   location: string;
   email: string;
 }
 
 export function AboutSection() {
+  const { hasPermission } = useAuth();
   const backend = import.meta.env.VITE_BACKEND_URL!;
   const [data, setData] = useState<AboutData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -27,6 +29,9 @@ export function AboutSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const canEdit = hasPermission("about", "edit");
+  const canCreate = hasPermission("about", "create");
 
   useEffect(() => {
     fetchAboutData();
@@ -36,7 +41,11 @@ export function AboutSection() {
     try {
       const res = await api.get("/api/getabout");
       console.log("About data from backend:", res.data);
-      const aboutData = res.data.about;
+      // Handle both object and array response
+      const aboutData = Array.isArray(res.data.about) 
+        ? res.data.about[0] 
+        : res.data.about;
+
       if (aboutData) {
         console.log("Setting about data:", aboutData);
         setData(aboutData);
@@ -49,7 +58,7 @@ export function AboutSection() {
           name: "",
           title: "",
           bio: "",
-          profileImage: "",
+          profile_pic: "",
           location: "",
           email: "",
         });
@@ -67,7 +76,6 @@ export function AboutSection() {
     if (!editData) return;
 
     setIsSaving(true);
-    const token = localStorage.getItem("token");
 
     try {
       const formData = new FormData();
@@ -79,13 +87,15 @@ export function AboutSection() {
 
       if (selectedFile) {
         formData.append("profile_pic", selectedFile);
+      } else if (editData.profile_pic) {
+        formData.append("profile_pic", editData.profile_pic);
       }
 
       let res;
       if (data?._id) {
         // Update existing
         console.log("Updating about with ID:", data._id);
-        res = await api.put(`/api/updateabout/${data._id}`, formData, {
+        res = await api.put(`/api/about/${data._id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -99,7 +109,7 @@ export function AboutSection() {
           return;
         }
         console.log("Creating new about entry");
-        res = await api.post("/api/createabout", formData, {
+        res = await api.post("/api/about", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -134,7 +144,7 @@ export function AboutSection() {
     if (file) {
       setSelectedFile(file);
       const imageUrl = URL.createObjectURL(file);
-      setEditData({ ...editData!, profileImage: imageUrl });
+      setEditData({ ...editData!, profile_pic: imageUrl });
     }
   };
 
@@ -155,19 +165,21 @@ export function AboutSection() {
         <div className="flex gap-2">
           {isEditing ? (
             <>
-              <Button onClick={handleSave} size="sm" disabled={isSaving}>
-                {isSaving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Check className="h-4 w-4 mr-2" />
-                    Save
-                  </>
-                )}
-              </Button>
+              {(data?._id ? canEdit : canCreate) && (
+                <Button onClick={handleSave} size="sm" disabled={isSaving}>
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="h-4 w-4 mr-2" />
+                      Save
+                    </>
+                  )}
+                </Button>
+              )}
               {data && (
                 <Button
                   onClick={handleCancel}
@@ -181,10 +193,12 @@ export function AboutSection() {
               )}
             </>
           ) : (
-            <Button onClick={() => setIsEditing(true)} size="sm">
-              <Edit3 className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
+            (canEdit || (!data && canCreate)) && (
+              <Button onClick={() => setIsEditing(true)} size="sm">
+                <Edit3 className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            )
           )}
         </div>
       </div>
@@ -198,7 +212,7 @@ export function AboutSection() {
           <CardContent className="space-y-4">
             <div className="flex flex-col items-center space-y-4">
               <Avatar className="h-64 w-64">
-                <AvatarImage src={editData.profileImage} />
+                <AvatarImage src={editData.profile_pic} />
                 <AvatarFallback>
                   {editData.name
                     ? editData.name
@@ -209,30 +223,54 @@ export function AboutSection() {
                 </AvatarFallback>
               </Avatar>
               {isEditing && (
-                <div className="flex flex-col items-center space-y-2">
-                  <Label htmlFor="profile-image" className="cursor-pointer">
-                    <Button variant="outline" size="sm" asChild>
-                      <span>
-                        <Upload className="h-4 w-4 mr-2" />
-                        {selectedFile ? "Change Image" : "Upload New Image"}
-                      </span>
-                    </Button>
-                  </Label>
-                  <input
-                    id="profile-image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                  {selectedFile && (
-                    <p className="text-sm text-green-600">
-                      {selectedFile.name}
+                <div className="flex flex-col w-full space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="profile-pic-url" className="text-xs">Profile Picture URL</Label>
+                    <Input
+                      id="profile-pic-url"
+                      value={editData.profile_pic}
+                      onChange={(e) =>
+                        setEditData({ ...editData, profile_pic: e.target.value })
+                      }
+                      placeholder="https://example.com/avatar.jpg"
+                      size={1} // Just to make it distinct from standard inputs if needed, but Input usually handles it
+                    />
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">Or upload file</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center space-y-2">
+                    <Label htmlFor="profile-image" className="cursor-pointer">
+                      <Button variant="outline" size="sm" asChild>
+                        <span>
+                          <Upload className="h-4 w-4 mr-2" />
+                          {selectedFile ? "Change File" : "Upload File"}
+                        </span>
+                      </Button>
+                    </Label>
+                    <input
+                      id="profile-image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    {selectedFile && (
+                      <p className="text-sm text-green-600">
+                        {selectedFile.name}
+                      </p>
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      Recommended: 400x400px, max 2MB
                     </p>
-                  )}
-                  <p className="text-sm text-muted-foreground">
-                    Recommended: 400x400px, max 2MB
-                  </p>
+                  </div>
                 </div>
               )}
             </div>

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getToken, logout } from './auth';
+import { getToken, getCSRFToken, logout } from './auth-helpers';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
@@ -16,6 +16,12 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    const csrfToken = getCSRFToken();
+    if (csrfToken) {
+      config.headers['x-csrf-token'] = csrfToken;
+    }
+    
     return config;
   },
   (error) => {

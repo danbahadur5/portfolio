@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import api from "@/utils/api";
 import { toast } from "react-toastify";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface Experience {
   _id?: string;
@@ -31,6 +32,7 @@ interface Experience {
 }
 
 export function ExperienceSection() {
+  const { hasPermission } = useAuth();
   const backend = import.meta.env.VITE_BACKEND_URL!;
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [newExperience, setNewExperience] = useState<Experience | null>(null);
@@ -38,6 +40,10 @@ export function ExperienceSection() {
   const [newAchievement, setNewAchievement] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  const canCreate = hasPermission("experience", "create");
+  const canEdit = hasPermission("experience", "edit");
+  const canDelete = hasPermission("experience", "delete");
 
   useEffect(() => {
     fetchExperiences();
@@ -86,7 +92,7 @@ export function ExperienceSection() {
     if (!id) return;
 
     try {
-      const res = await api.delete(`/api/deleteexperience/${id}`);
+      const res = await api.delete(`/api/experience/${id}`);
 
       toast.success(res.data.message);
       setExperiences(experiences.filter((e) => e._id !== id));
@@ -107,7 +113,7 @@ export function ExperienceSection() {
         // Update experience
         console.log("Updating experience with ID:", newExperience._id);
         res = await api.put(
-          `/api/updateexperience/${newExperience._id}`,
+          `/api/experience/${newExperience._id}`,
           newExperience
         );
         console.log("Update response:", res.data);
@@ -120,7 +126,7 @@ export function ExperienceSection() {
       } else {
         // Create experience
         console.log("Creating new experience");
-        res = await api.post("/api/createexperience", newExperience);
+        res = await api.post("/api/experience", newExperience);
         console.log("Create response:", res.data);
 
         setExperiences([...experiences, res.data.experience]);
@@ -176,10 +182,12 @@ export function ExperienceSection() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-semibold">Work Experience</h2>
-        <Button onClick={handleAddExperience}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Experience
-        </Button>
+        {canCreate && (
+          <Button onClick={handleAddExperience}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Experience
+          </Button>
+        )}
       </div>
 
       {/* Experience List */}
@@ -207,20 +215,24 @@ export function ExperienceSection() {
                   </div>
                 </div>
                 <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleEditExperience(experience)}
-                  >
-                    <Edit3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDeleteExperience(experience._id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {canEdit && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleEditExperience(experience)}
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDeleteExperience(experience._id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardHeader>

@@ -1,8 +1,19 @@
 import { Message } from "../Models/Message.models.js";
 import { catchAsyncErrors, ErrorHandler } from "../Middlewares/error.middlewares.js";
+import { messageSchema } from "../utils/validation.js";
+import { sanitize } from "../utils/sanitization.js";
 
 export const createMessage = catchAsyncErrors(async (req, res, next) => {
-  const { name, email, subject, message } = req.body;
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+  
+  // 2. Validate input
+  const { error } = messageSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
+  const { name, email, subject, message } = sanitizedData;
 
   const newMessage = await Message.create({
     name,
@@ -23,6 +34,14 @@ export const getMessages = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     messages,
+  });
+});
+
+export const getUnreadCount = catchAsyncErrors(async (req, res, next) => {
+  const count = await Message.countDocuments({ status: "unread" });
+  res.status(200).json({
+    success: true,
+    count,
   });
 });
 

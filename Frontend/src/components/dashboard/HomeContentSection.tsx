@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Upload, Edit3, Check, X, Loader2 } from "lucide-react";
 import api from "../../utils/api";
 import { toast } from "react-toastify";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface HomeContentData {
   _id?: string;
@@ -20,6 +21,7 @@ interface HomeContentData {
 }
 
 export function HomeContentSection() {
+  const { hasPermission } = useAuth();
   const backend = import.meta.env.VITE_BACKEND_URL!;
   const [data, setData] = useState<HomeContentData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -27,6 +29,9 @@ export function HomeContentSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const canEdit = hasPermission("homeContent", "edit");
+  const canCreate = hasPermission("homeContent", "create");
 
   useEffect(() => {
     fetchHomeContent();
@@ -65,7 +70,6 @@ export function HomeContentSection() {
     if (!editData) return;
 
     setIsSaving(true);
-    const token = localStorage.getItem("token");
 
     try {
       const formData = new FormData();
@@ -84,14 +88,14 @@ export function HomeContentSection() {
       let res;
       if (data?._id) {
         // Update existing
-        res = await api.put(`/api/updatehomecontent/${data._id}`, formData, {
+        res = await api.put(`/api/homecontent/${data._id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
       } else {
         // Create new
-        res = await api.post("/api/createhomecontent", formData, {
+        res = await api.post("/api/homecontent", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -139,37 +143,101 @@ export function HomeContentSection() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Home Page Content</CardTitle>
-        {!isEditing && (
-          <Button onClick={() => setIsEditing(true)} size="sm">
-            <Edit3 className="w-4 h-4 mr-2" />
-            Edit
-          </Button>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
+        <CardTitle className="text-2xl font-bold">Home Content</CardTitle>
+        {isEditing ? (
+          <div className="flex gap-2">
+            {(data?._id ? canEdit : canCreate) && (
+              <Button onClick={handleSave} size="sm" disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Save
+                  </>
+                )}
+              </Button>
+            )}
+            <Button
+              onClick={handleCancel}
+              variant="outline"
+              size="sm"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
+          </div>
+        ) : (
+          (data?._id ? canEdit : canCreate) && (
+            <Button onClick={() => setIsEditing(true)} size="sm">
+              <Edit3 className="w-4 h-4 mr-2" />
+              {data?._id ? "Edit" : "Create"}
+            </Button>
+          )
         )}
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
           <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 w-full md:w-48 space-y-4">
               <Label className="mb-2 block">Profile Picture</Label>
-              <div className="relative group">
+              <div className="flex flex-col items-center space-y-4">
                 <Avatar className="w-32 h-32 border-2 border-border">
                   <AvatarImage src={editData?.profile_pic} />
                   <AvatarFallback>
                     {editData?.name?.charAt(0) || "U"}
                   </AvatarFallback>
                 </Avatar>
+                
                 {isEditing && (
-                  <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                    <Upload className="w-6 h-6 text-white" />
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                    />
-                  </label>
+                  <div className="w-full space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="profile-pic-url" className="text-xs">Image URL</Label>
+                      <Input
+                        id="profile-pic-url"
+                        value={editData?.profile_pic || ""}
+                        onChange={(e) =>
+                          setEditData((prev) => prev ? { ...prev, profile_pic: e.target.value } : null)
+                        }
+                        placeholder="https://example.com/avatar.jpg"
+                      />
+                    </div>
+
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">Or upload</span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-center">
+                      <label className="cursor-pointer">
+                        <Button variant="outline" size="sm" asChild>
+                          <span>
+                            <Upload className="w-4 h-4 mr-2" />
+                            {selectedFile ? "Change File" : "Upload File"}
+                          </span>
+                        </Button>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                        />
+                      </label>
+                    </div>
+                    {selectedFile && (
+                      <p className="text-xs text-center text-green-600 truncate">
+                        {selectedFile.name}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -240,26 +308,7 @@ export function HomeContentSection() {
             </div>
           </div>
 
-          {isEditing && (
-            <div className="flex justify-end space-x-2 pt-4 border-t">
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isSaving}
-              >
-                <X className="w-4 h-4 mr-2" />
-                Cancel
-              </Button>
-              <Button onClick={handleSave} disabled={isSaving}>
-                {isSaving ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Check className="w-4 h-4 mr-2" />
-                )}
-                Save Changes
-              </Button>
-            </div>
-          )}
+
         </div>
       </CardContent>
     </Card>

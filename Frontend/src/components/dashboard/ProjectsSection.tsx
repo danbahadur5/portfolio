@@ -9,7 +9,7 @@ import { Textarea } from "../ui/textarea";
 import { Label } from "../ui/label";
 import { Badge } from "../ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Plus, Edit3, Trash2, ExternalLink, Github, X } from "lucide-react";
+import { Plus, Edit3, Trash2, ExternalLink, Github, X, Briefcase } from "lucide-react";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import {
   Select,
@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import api from "../../utils/api";
+import { useAuth } from "../../contexts/AuthContext";
 
 // ✅ TypeScript interface
 interface Project {
@@ -35,6 +36,7 @@ interface Project {
 
 // ✅ Project categories
 const PROJECT_CATEGORIES = [
+  "all",
   "Full-Stack",
   "Frontend",
   "Backend",
@@ -53,6 +55,7 @@ const PROJECT_CATEGORIES = [
 ];
 
 export function ProjectsSection() {
+  const { hasPermission } = useAuth();
   const backend = import.meta.env.VITE_BACKEND_URL!;
   const [projects, setProjects] = useState<Project[]>([]);
   const [newProject, setNewProject] = useState<Project | null>(null);
@@ -61,20 +64,24 @@ export function ProjectsSection() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const canCreate = hasPermission("projects", "create");
+  const canEdit = hasPermission("projects", "edit");
+  const canDelete = hasPermission("projects", "delete");
+
   // ✅ Fetch projects
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         const res = await api.get("/api/getallproject");
 
-        const projectsData = res.data.projects.map((project: any) => ({
+        const projectsData = (res.data?.projects || []).map((project: any) => ({
           ...project,
           technologies: Array.isArray(project.technologies)
             ? project.technologies
             : typeof project.technologies === "string"
             ? JSON.parse(project.technologies)
             : [],
-          category: project.category || "Other",
+          category: project.category || "all",
           featured: project.featured === true || project.featured === "true",
         }));
 
@@ -128,7 +135,7 @@ export function ProjectsSection() {
       technologies: [],
       liveUrl: "",
       sourceUrl: "",
-      category: "Other",
+      category: "all",
       featured: false,
     });
     setSelectedFile(null);
@@ -145,7 +152,7 @@ export function ProjectsSection() {
   async function handleDeleteProject(id?: string) {
     if (!id) return;
     try {
-      const res = await api.delete(`/api/deleteproject/${id}`);
+      const res = await api.delete(`/api/projects/${id}`);
       toast.success(res.data.message);
       setProjects(projects.filter((p) => p._id !== id));
       setIsDialogOpen(false);
@@ -158,7 +165,6 @@ export function ProjectsSection() {
   async function handleSaveProject() {
     if (!newProject || !isFormValid()) return;
     setIsLoading(true);
-    const token = localStorage.getItem("token");
 
     try {
       let res;
@@ -170,6 +176,7 @@ export function ProjectsSection() {
         category: newProject.category || "Other",
         featured: !!newProject.featured,
         technologies: newProject.technologies || [],
+        image: newProject.image, // Include image URL in payload
       };
 
       if (selectedFile) {
@@ -177,9 +184,8 @@ export function ProjectsSection() {
         const formData = new FormData();
         Object.keys(payload).forEach((key) => {
           if (key === "technologies") {
-            payload.technologies.forEach((tech: string) =>
-              formData.append("technologies", tech)
-            );
+            // Send technologies as a JSON string to avoid array format issues with Multer
+            formData.append("technologies", JSON.stringify(payload.technologies));
           } else {
             formData.append(key, payload[key]);
           }
@@ -188,29 +194,29 @@ export function ProjectsSection() {
 
         if (newProject._id) {
           res = await api.put(
-            `/api/updateproject/${newProject._id}`,
+            `/api/projects/${newProject._id}`,
             formData
           );
         } else {
-          res = await api.post("/api/createproject", formData);
+          res = await api.post("/api/projects", formData);
         }
       } else {
         // Send JSON if no image file
         if (newProject._id) {
           res = await api.put(
-            `/api/updateproject/${newProject._id}`,
+            `/api/projects/${newProject._id}`,
             payload
           );
         } else {
-          res = await api.post("/api/createproject", payload);
+          res = await api.post("/api/projects", payload);
         }
       }
 
       if (newProject._id) {
         setProjects(
-          projects.map((p) => (p._id === newProject._id ? res.data.project : p))
+          projects.map((p) => (p._id === newProject._id ? res.data?.project || p : p))
         );
-      } else {
+      } else if (res.data?.project) {
         setProjects([...projects, res.data.project]);
       }
 
@@ -237,133 +243,136 @@ export function ProjectsSection() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-semibold">Projects</h2>
-        <Button onClick={handleAddProject}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Project
-        </Button>
+    <div className="space-y-8 pb-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            Portfolio
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            Showcase and manage your professional projects.
+          </p>
+        </div>
+        {canCreate && (
+          <Button 
+            onClick={handleAddProject}
+            className="h-10 rounded-xl shadow-lg shadow-primary/20"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Project
+          </Button>
+        )}
       </div>
 
-      {/* Projects Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.map((project) => (
-          <Card key={project._id} className="overflow-hidden">
-            <div className="relative h-48 bg-muted">
-              {project.image ? (
-                <ImageWithFallback
-                  src={project.image}
-                  alt={project.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                  No Image
-                </div>
-              )}
-              {project.featured && (
-                <div className="absolute top-2 right-2">
-                  <Badge className="bg-yellow-500 text-white">
-                    ⭐ Featured
-                  </Badge>
-                </div>
-              )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {projects.length === 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center py-32 bg-white dark:bg-slate-900 rounded-3xl ring-1 ring-slate-200/50 dark:ring-slate-800/50">
+            <div className="h-16 w-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+              <Briefcase className="h-8 w-8 text-slate-400" />
             </div>
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="font-semibold">{project.title}</h3>
-                {project.category && (
-                  <Badge variant="outline" className="text-xs">
+            <h3 className="text-lg font-bold">No projects yet</h3>
+            <p className="text-sm text-slate-500 mt-1">Click the button above to add your first project.</p>
+          </div>
+        ) : (
+          projects.map((project) => (
+            <Card key={project._id} className="group border-none shadow-sm bg-white dark:bg-slate-900 ring-1 ring-slate-200/50 dark:ring-slate-800/50 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/50 hover:-translate-y-1 rounded-2xl">
+              <div className="relative h-56 overflow-hidden">
+                {project.image ? (
+                  <ImageWithFallback
+                    src={project.image}
+                    alt={project.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-400">
+                    <Briefcase className="h-10 w-10 mb-2 opacity-20" />
+                    <span className="text-xs font-bold uppercase tracking-widest opacity-50">No Preview</span>
+                  </div>
+                )}
+                
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                
+                <div className="absolute top-3 left-3 flex gap-2">
+                  {project.featured && (
+                    <Badge className="bg-amber-400 hover:bg-amber-400 text-black font-bold text-[10px] px-2 py-0.5 rounded-lg shadow-lg border-none">
+                      FEATURED
+                    </Badge>
+                  )}
+                  <Badge variant="secondary" className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-slate-900 dark:text-white font-bold text-[10px] px-2 py-0.5 rounded-lg shadow-sm border-none">
                     {project.category}
                   </Badge>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-                {project.description}
-              </p>
-              <div className="flex flex-wrap gap-1 mb-4 min-h-[24px]">
-                {Array.isArray(project.technologies) &&
-                project.technologies.length > 0 ? (
-                  <>
-                    {project.technologies.slice(0, 3).map((tech, idx) => (
-                      <Badge
-                        key={`${tech}-${idx}`}
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        {tech}
-                      </Badge>
-                    ))}
-                    {project.technologies.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{project.technologies.length - 3}
-                      </Badge>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-xs text-muted-foreground italic">
-                    No technologies listed
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex gap-2">
+                </div>
+
+                <div className="absolute bottom-4 right-4 flex gap-2 translate-y-10 group-hover:translate-y-0 transition-transform duration-300">
                   {project.liveUrl && (
-                    <Button size="sm" variant="outline" asChild>
-                      <a
-                        href={project.liveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <ExternalLink className="h-3 w-3" />
+                    <Button size="icon" variant="secondary" className="h-9 w-9 rounded-xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-xl border-none" asChild>
+                      <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4" />
                       </a>
                     </Button>
                   )}
                   {project.sourceUrl && (
-                    <Button size="sm" variant="outline" asChild>
-                      <a
-                        href={project.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Github className="h-3 w-3" />
+                    <Button size="icon" variant="secondary" className="h-9 w-9 rounded-xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-xl border-none" asChild>
+                      <a href={project.sourceUrl} target="_blank" rel="noopener noreferrer">
+                        <Github className="h-4 w-4" />
                       </a>
                     </Button>
                   )}
                 </div>
-                <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleEditProject(project)}
-                  >
-                    <Edit3 className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDeleteProject(project._id)}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
-      {projects.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <p className="text-muted-foreground mb-4">No projects added yet</p>
-            <Button onClick={handleAddProject}>
-              <Plus className="h-4 w-4 mr-2" /> Add Your First Project
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{project.title}</h3>
+                </div>
+                
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 line-clamp-2 leading-relaxed">
+                  {project.description}
+                </p>
+                
+                <div className="flex flex-wrap gap-1.5 mb-6">
+                  {(project.technologies || []).slice(0, 4).map((tech, idx) => (
+                    <span
+                      key={idx}
+                      className="text-[10px] font-bold px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 uppercase tracking-wider"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                  {project.technologies && project.technologies.length > 4 && (
+                    <span className="text-[10px] font-bold px-2 py-1 rounded-md bg-primary/10 text-primary uppercase tracking-wider">
+                      +{project.technologies.length - 4}
+                    </span>
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-end gap-2">
+                  {canEdit && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-9 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs"
+                      onClick={() => handleEditProject(project)}
+                    >
+                      <Edit3 className="h-4 w-4 mr-2" /> Edit
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-9 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-red-500 hover:text-red-600 font-bold text-xs"
+                      onClick={() => handleDeleteProject(project._id!)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" /> Delete
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
 
       {/* Project Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -427,30 +436,53 @@ export function ProjectsSection() {
               </div>
 
               {/* Image */}
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <Label>Project Image *</Label>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="image-upload" className="cursor-pointer">
-                    <Button variant="outline" size="sm" asChild>
-                      <span>Upload Image</span>
-                    </Button>
-                  </Label>
-                  <input
-                    id="image-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                  {selectedFile && <span>{selectedFile.name}</span>}
+                
+                <div className="flex flex-col gap-4 p-4 border rounded-lg bg-muted/30">
+                  <div className="space-y-2">
+                    <Label htmlFor="image-url" className="text-xs">Image URL</Label>
+                    <Input
+                      id="image-url"
+                      value={newProject.image}
+                      onChange={(e) =>
+                        setNewProject({ ...newProject, image: e.target.value })
+                      }
+                      placeholder="https://example.com/image.jpg"
+                    />
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">Or upload file</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="image-upload" className="cursor-pointer">
+                      <Button variant="outline" size="sm" asChild>
+                        <span>
+                          {selectedFile ? "Change File" : "Upload File"}
+                        </span>
+                      </Button>
+                    </Label>
+                    <input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    {selectedFile && (
+                      <span className="text-sm text-green-600">
+                        {selectedFile.name}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <Input
-                  value={newProject.image}
-                  onChange={(e) =>
-                    setNewProject({ ...newProject, image: e.target.value })
-                  }
-                  placeholder="Or provide image URL"
-                />
               </div>
 
               {/* Technologies */}

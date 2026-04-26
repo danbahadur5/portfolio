@@ -7,6 +7,9 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "seed": "node utils/seedAdmin.js",
+    "seed:direct": "node utils/directStoreAdmin.js",
+    "seed:data": "node utils/seedInitialData.js",
     "build": "npm install",
     "heroku-postbuild": "npm install"
   },
@@ -16,6 +19,7 @@
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
+    "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",

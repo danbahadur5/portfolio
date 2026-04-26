@@ -1,7 +1,18 @@
 import { Contact } from "../Models/Contact.models.js";
 import { catchAsyncErrors, ErrorHandler } from "../Middlewares/error.middlewares.js";
+import { contactSchema } from "../utils/validation.js";
+import { sanitize } from "../utils/sanitization.js";
 
 export const createContact = catchAsyncErrors(async (req, res, next) => {
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = contactSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
   const {
     email,
     phone,
@@ -9,7 +20,7 @@ export const createContact = catchAsyncErrors(async (req, res, next) => {
     github_profile,
     twitter_profile,
     personal_website,
-  } = req.body;
+  } = sanitizedData;
 
   const contact = await Contact.create({
     email,
@@ -37,6 +48,16 @@ export const getContacts = catchAsyncErrors(async (req, res, next) => {
 
 export const updateContact = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
+  
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = contactSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
   const {
     email,
     phone,
@@ -44,7 +65,7 @@ export const updateContact = catchAsyncErrors(async (req, res, next) => {
     github_profile,
     twitter_profile,
     personal_website,
-  } = req.body;
+  } = sanitizedData;
 
   const contact = await Contact.findByIdAndUpdate(
     id,

@@ -1,5 +1,6 @@
 import React from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 import { Navigation } from "./Navigation";
 import { ScrollProgress } from "./ScrollProgress";
 import { BackToTop } from "./BackToTop";
@@ -7,27 +8,27 @@ import Footer from "./Footer";
 
 interface LayoutProps {
   children: React.ReactNode;
-  currentPage: string;
-  onPageChange: (page: string) => void;
 }
 
-export function Layout({ children, currentPage, onPageChange }: LayoutProps) {
+export function Layout({ children }: LayoutProps) {
+  const location = useLocation();
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background transition-colors duration-500">
       <ScrollProgress />
-      <Navigation currentPage={currentPage} onPageChange={onPageChange} />
+      <Navigation />
 
       <AnimatePresence mode="wait">
         <motion.main
-          key={currentPage}
+          key={location.pathname}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="pt-[5.5rem]"
+          className="pt-16 md:pt-20"
         >
-          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div id="main-content" className="min-h-[calc(100vh-5.5rem)]">
+          <div className="responsive-container">
+            <div id="main-content" className="min-h-[calc(100vh-10rem)]">
               {children}
             </div>
           </div>

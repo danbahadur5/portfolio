@@ -1,15 +1,26 @@
 import { Experience } from "../Models/experience.models.js";
 import { catchAsyncErrors, ErrorHandler } from "../Middlewares/error.middlewares.js";
+import { experienceSchema } from "../utils/validation.js";
+import { sanitize } from "../utils/sanitization.js";
 
 export const createExperience = catchAsyncErrors(async (req, res, next) => {
-  const { title, company, location, start_date, end_date, description, achievements } = req.body;
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = experienceSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
+  const { title, company, location, start_date, end_date, description, achievements } = sanitizedData;
 
   const experience = await Experience.create({
     title,
     company,
     location,
     start_date,
-    end_date,
+    end_date: end_date === "" ? null : end_date,
     description,
     achievements: typeof achievements === "string" ? JSON.parse(achievements) : achievements || [],
   });
@@ -31,7 +42,17 @@ export const getExperience = catchAsyncErrors(async (req, res, next) => {
 
 export const updateExperience = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
-  const { title, company, location, start_date, end_date, description, achievements } = req.body;
+
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = experienceSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
+  const { title, company, location, start_date, end_date, description, achievements } = sanitizedData;
 
   const experience = await Experience.findByIdAndUpdate(
     id,
@@ -40,7 +61,7 @@ export const updateExperience = catchAsyncErrors(async (req, res, next) => {
       company,
       location,
       start_date,
-      end_date,
+      end_date: end_date === "" ? null : end_date,
       description,
       achievements: typeof achievements === "string" ? JSON.parse(achievements) : achievements || [],
     },

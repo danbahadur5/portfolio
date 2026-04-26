@@ -1,342 +1,325 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Card, CardContent } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { motion } from "framer-motion";
-import { LogIn, AlertCircle, CheckCircle2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import api from "../../utils/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { LogIn, AlertCircle, Loader2, ShieldCheck, Key, ArrowLeft, Shield, Eye, EyeOff } from "lucide-react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { toast } from "react-toastify";
 
-type FormData = {
-  email: string;
-  password: string;
-  remember: boolean;
-};
-
-type Errors = {
-  email?: string;
-  password?: string;
-  general?: string;
-};
-
-import { login, UserRole } from "@/utils/auth";
-
-export default function LoginForm() {
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
-    password: "",
-    remember: false,
-  });
-  const [errors, setErrors] = useState<Errors>({});
-  const [touched, setTouched] = useState<{ [K in keyof FormData]?: boolean }>(
-    {}
-  );
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+export function LoginPage() {
+  const { login, verifyMFA, mfaRequired, tempToken, isAuthenticated, user } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [mfaCode, setMfaCode] = useState("");
+  const [backupCode, setBackupCode] = useState("");
+  const [useBackupCode, setUseBackupCode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
-  const emailRef = useRef<HTMLInputElement | null>(null);
+  const location = useLocation();
+  const emailRef = useRef<HTMLInputElement>(null);
+  const mfaRef = useRef<HTMLInputElement>(null);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const from = (location.state as any)?.from?.pathname || "/dashboard";
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, user, navigate, location]);
 
   useEffect(() => {
-    // Autofocus email for quicker login
-    emailRef.current?.focus();
-    const remembered = localStorage.getItem("rememberMe") === "true";
-    if (remembered) {
-      const savedEmail = localStorage.getItem("savedEmail") || "";
-      setFormData((f) => ({ ...f, email: savedEmail, remember: true }));
+    if (!mfaRequired) {
+      emailRef.current?.focus();
+    } else {
+      mfaRef.current?.focus();
     }
-  }, []);
+  }, [mfaRequired]);
 
-  useEffect(() => {
-    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
-    if (isAuthenticated || loggedIn) {
-      navigate("/dashboard");
-    }
-  }, [isAuthenticated, navigate]);
-
-  // Minimal validator: returns errors object (empty => valid)
-  const getValidationErrors = (data: FormData): Errors => {
-    const e: Errors = {};
-    if (!data.email) {
-      e.email = "Email is required.";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-      e.email = "Please enter a valid email address.";
-    }
-
-    if (!data.password) {
-      e.password = "Password is required.";
-    } else if (data.password.length < 4) {
-      e.password = "Password must be at least 4 characters.";
-    }
-    return e;
-  };
-
-  const validateAndSet = (fields?: Partial<FormData>): boolean => {
-    const merged = { ...formData, ...fields };
-    const newErrors = getValidationErrors(merged);
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const onBlurField = (name: keyof FormData) => {
-    setTouched((t) => ({ ...t, [name]: true }));
-    validateAndSet();
-  };
-
-  const handleInput =
-    (field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value =
-        e.currentTarget.type === "checkbox"
-          ? e.currentTarget.checked
-          : e.currentTarget.value;
-      setFormData((prev) => ({ ...prev, [field]: value } as FormData));
-      // Clear server/general errors when user edits
-      setErrors((prev) => ({ ...prev, general: undefined }));
-      // Optionally validate live but only show field error if touched
-      if (touched[field]) {
-        validateAndSet({ [field]: value } as Partial<FormData>);
-      }
-    };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // mark all fields touched so validation messages show if invalid
-    setTouched({ email: true, password: true, remember: true });
-    if (!validateAndSet()) return;
-
-    setLoading(true);
-    setErrors({});
-    setSuccessMsg(null);
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const res = await api.post("/api/login", {
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (res.data?.success) {
-        setIsAuthenticated(true);
-        if (res.data.token && res.data.user?.role) {
-          login(res.data.token, res.data.user.role as UserRole);
-        }
-
-        // Remember me behavior: save email only (not password)
-        if (formData.remember) {
-          localStorage.setItem("rememberMe", "true");
-          localStorage.setItem("savedEmail", formData.email);
-        } else {
-          localStorage.removeItem("rememberMe");
-          localStorage.removeItem("savedEmail");
-        }
-
-        // Friendly success message (screen readers will pick up)
-        setSuccessMsg("Signed in successfully. Redirecting to dashboard...");
-        // navigate immediately to dashboard (keeps UX snappy)
-        navigate("/dashboard");
-      } else {
-        setErrors((prev) => ({
-          ...prev,
-          general:
-            res.data?.message || "Invalid credentials — please try again.",
-        }));
-      }
+      await login({ email, password });
     } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        err.message ||
-        "Network error — please check your connection.";
-      setErrors((prev) => ({ ...prev, general: msg }));
+      setError(err.response?.data?.message || "Login failed. Please check your credentials.");
+      toast.error(err.response?.data?.message || "Login failed");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+    }
+  };
+
+  const handleMFAVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tempToken) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await verifyMFA({
+        tempToken,
+        code: useBackupCode ? undefined : mfaCode,
+        backupCode: useBackupCode ? backupCode : undefined,
+      });
+      toast.success("MFA Verified Successfully");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "MFA Verification failed");
+      toast.error(err.response?.data?.message || "MFA Verification failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.36 }}
-      >
-        <Card className="w-full max-w-md rounded-2xl shadow-lg border border-gray-200 bg-white">
-          <CardContent className="p-6">
-            <header className="mb-4">
-              <h2 className="text-2xl font-extrabold text-gray-800 flex items-center gap-2">
-                <LogIn className="w-6 h-6 text-blue-600" /> Sign in to your
-                account
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">
-                Enter your email and password to access your dashboard.
-              </p>
-            </header>
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#020617] relative overflow-hidden font-sans">
+      {/* Dynamic Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+      </div>
 
-            {/* Accessible live region for general errors & success */}
-            <div aria-live="polite" className="min-h-[1.5rem]">
-              {errors.general && (
-                <div
-                  role="alert"
-                  className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm mb-3"
-                >
-                  <AlertCircle size={16} /> {errors.general}
-                </div>
-              )}
-              {successMsg && (
-                <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-md text-sm mb-3">
-                  <CheckCircle2 size={16} /> {successMsg}
-                </div>
-              )}
-            </div>
+      <div className="relative z-10 w-full max-w-md px-6 py-12">
+        {/* Back to Site Link */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <Link 
+            to="/" 
+            className="inline-flex items-center text-sm font-medium text-slate-300 hover:text-white transition-colors group"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+            Back to website
+          </Link>
+        </motion.div>
 
-            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-              {/* Email */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Email
-                </label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={handleInput("email")}
-                  onBlur={() => onBlurField("email")}
-                  ref={emailRef}
-                  aria-invalid={Boolean(errors.email)}
-                  aria-describedby={errors.email ? "email-error" : "email-help"}
-                  className={`mt-2 ${errors.email ? "border-red-500" : ""}`}
-                />
-                <div className="flex items-center justify-between mt-1">
-                  {errors.email && (
-                    <p
-                      id="email-error"
-                      className="text-red-500 text-sm flex items-center gap-1"
-                    >
-                      <AlertCircle size={14} /> {errors.email}
-                    </p>
-                  )}
-                </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-xl shadow-sm overflow-hidden p-6">
+            <CardHeader className="space-y-1 pb-4 pt-2 text-center">
+              <div className="mx-auto w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-3 border border-primary/20 shadow-inner">
+                {mfaRequired ? (
+                  <Key className="w-6 h-6 text-primary animate-bounce" />
+                ) : (
+                  <Shield className="w-6 h-6 text-primary" />
+                )}
               </div>
+              <CardTitle className="text-xl font-bold tracking-tight text-white">
+                {mfaRequired ? "Security Check" : "Admin Portal"}
+              </CardTitle>
+              <CardDescription className="text-slate-300 text-sm">
+                {mfaRequired 
+                  ? "Verification required to proceed" 
+                  : "Secure access for authorized personnel only"}
+              </CardDescription>
+            </CardHeader>
 
-              {/* Password */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Password
-                </label>
-
-                <div className="relative mt-2">
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={formData.password}
-                    onChange={handleInput("password")}
-                    onBlur={() => onBlurField("password")}
-                    aria-invalid={Boolean(errors.password)}
-                    aria-describedby={
-                      errors.password ? "password-error" : "password-help"
-                    }
-                    className={`pr-10 ${
-                      errors.password ? "border-red-500" : ""
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((s) => !s)}
-                    className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700"
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
+            <CardContent className="pb-4">
+              <AnimatePresence mode="wait">
+                {!mfaRequired ? (
+                  <motion.form
+                    key="login-form"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    onSubmit={handleLogin}
+                    className="space-y-4"
                   >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold uppercase tracking-widest text-slate-300 ml-1">
+                        Identity
+                      </label>
+                      <Input
+                        ref={emailRef}
+                        type="email"
+                        placeholder="admin@portal.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="h-9 bg-slate-950/50 border-slate-800 text-sm text-white placeholder:text-slate-600 focus:ring-1 focus:ring-primary focus:border-primary transition-all rounded-lg"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between ml-1">
+                        <label className="text-xs font-bold uppercase tracking-widest text-slate-300">
+                          Passkey
+                        </label>
+                      </div>
+                      <div className="relative group">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          className="h-9 bg-slate-950/50 border-slate-800 text-sm text-white placeholder:text-slate-600 focus:ring-1 focus:ring-primary focus:border-primary transition-all rounded-lg pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white transition-colors rounded-md hover:bg-slate-800"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
 
-                <div className="mt-2">
-                  <div className="flex items-center justify-between">
-                    {errors.password && (
-                      <p
-                        id="password-error"
-                        className="text-red-500 text-sm flex items-center gap-1"
+                    <div className="flex items-center justify-between px-1">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="remember"
+                          className="w-3.5 h-3.5 rounded border-slate-800 bg-slate-950 text-primary focus:ring-1 focus:ring-primary focus:ring-offset-slate-900"
+                        />
+                        <label htmlFor="remember" className="text-xs font-medium text-slate-300 cursor-pointer hover:text-slate-200 transition-colors">
+                          Remember session
+                        </label>
+                      </div>
+                      <button type="button" className="text-xs font-medium text-primary hover:underline transition-all">
+                        Recovery?
+                      </button>
+                    </div>
+
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        className="flex items-center gap-2 p-3 text-xs rounded-lg bg-red-500/10 text-red-400 border border-red-500/20"
                       >
-                        <AlertCircle size={14} /> {errors.password}
-                      </p>
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <p className="font-medium">{error}</p>
+                      </motion.div>
                     )}
-                  </div>
-                </div>
-              </div>
 
-              <div className="flex items-center justify-between gap-4">
-                <label className="inline-flex items-center text-sm select-none">
-                  <input
-                    type="checkbox"
-                    className="mr-2 h-4 w-4 rounded border-gray-300"
-                    checked={formData.remember}
-                    onChange={handleInput("remember")}
-                    aria-checked={formData.remember}
-                  />
-                  Remember me
-                </label>
-              </div>
-
-              <div>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full flex items-center justify-center gap-2"
-                  style={{
-                    backgroundColor: loading ? "#94c6ff" : undefined,
-                    cursor: loading ? "not-allowed" : "pointer",
-                  }}
-                >
-                  <motion.span
-                    initial={{ scale: 1 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex items-center gap-2"
+                    <div className="pt-2">
+                      <Button 
+                        type="submit" 
+                        className="w-full max-w-[240px] mx-auto block h-9 text-sm font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99]" 
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Authenticating...</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center gap-2">
+                            <LogIn className="h-4 w-4" />
+                            <span>Initialize Access</span>
+                          </div>
+                        )}
+                      </Button>
+                    </div>
+                  </motion.form>
+                ) : (
+                  <motion.form
+                    key="mfa-form"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    onSubmit={handleMFAVerify}
+                    className="space-y-4"
                   >
-                    {loading ? (
-                      // simple spinner (SVG)
-                      <svg
-                        className="animate-spin h-4 w-4"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between px-1">
+                        <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                          {useBackupCode ? "Recovery Token" : "Authenticator Code"}
+                        </label>
+                        <button 
+                          type="button" 
+                          className="text-xs font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-tight"
+                          onClick={() => setUseBackupCode(!useBackupCode)}
+                        >
+                          {useBackupCode ? "Use Code" : "Use Backup"}
+                        </button>
+                      </div>
+                      
+                      <div className="relative">
+                        {useBackupCode ? (
+                          <div className="relative">
+                            <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                            <Input
+                              type="text"
+                              placeholder="8-CHARACTER TOKEN"
+                              value={backupCode}
+                              onChange={(e) => setBackupCode(e.target.value.toUpperCase())}
+                              className="h-9 pl-10 bg-slate-950/50 border-slate-800 text-sm text-white placeholder:text-slate-600 font-mono tracking-widest rounded-lg"
+                              maxLength={8}
+                              required
+                            />
+                          </div>
+                        ) : (
+                          <Input
+                            ref={mfaRef}
+                            type="text"
+                            placeholder="000000"
+                            value={mfaCode}
+                            onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ""))}
+                            className="text-center text-xl tracking-[0.4em] font-mono h-10 bg-slate-950/50 border-slate-800 text-primary placeholder:text-slate-800 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary"
+                            maxLength={6}
+                            required
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        className="flex items-center gap-2 p-3 text-xs rounded-lg bg-red-500/10 text-red-400 border border-red-500/20"
                       >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                        />
-                      </svg>
-                    ) : (
-                      <LogIn className="w-4 h-4" />
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <p className="font-medium">{error}</p>
+                      </motion.div>
                     )}
-                    {loading ? "Signing in..." : "Sign In"}
-                  </motion.span>
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </motion.div>
+
+                    <div className="pt-2">
+                      <Button 
+                        type="submit" 
+                        className="w-full max-w-[240px] mx-auto block h-9 text-sm font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99]" 
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                        ) : (
+                          "Verify Identity"
+                        )}
+                      </Button>
+                    </div>
+                  </motion.form>
+                )}
+              </AnimatePresence>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Footer info */}
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-8 text-center text-sm text-slate-600"
+        >
+          &copy; {new Date().getFullYear()} System Control. All rights reserved.
+        </motion.p>
+      </div>
     </div>
   );
 }

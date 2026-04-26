@@ -11,6 +11,10 @@ const SkillSchema = new mongoose.Schema({
     frameworks:{
         type: [String],
         default: [],
+    },
+    tools:{
+        type: [String],
+        default: [],
     }
 },{timestamps:true})
 export const Skill = mongoose.model("Skill",SkillSchema);

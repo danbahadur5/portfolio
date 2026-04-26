@@ -1,6 +1,8 @@
 import cloudinary from "../Configs/cloudinary.configs.js";
 import { About } from "../Models/About.models.js";
 import { catchAsyncErrors, ErrorHandler } from "../Middlewares/error.middlewares.js";
+import { aboutSchema } from "../utils/validation.js";
+import { sanitize } from "../utils/sanitization.js";
 
 const uploadImage = async (file, options = {}) => {
   if (!file) throw new Error("No file provided");
@@ -20,13 +22,27 @@ const uploadImage = async (file, options = {}) => {
 };
 
 export const createAbout = catchAsyncErrors(async (req, res, next) => {
-  const { name, email, title, bio, location } = req.body;
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
 
-  if (!req.file) {
-    return next(new ErrorHandler("Profile picture is required", 400));
+  // 2. Validate input
+  const { error } = aboutSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
   }
 
-  const cloud_save = await uploadImage(req.file);
+  const { name, email, title, bio, location, profile_pic } = sanitizedData;
+
+  let profilePicUrl = profile_pic;
+
+  if (req.file) {
+    const cloud_save = await uploadImage(req.file, { folder: "about" });
+    profilePicUrl = cloud_save.secure_url;
+  }
+
+  if (!profilePicUrl && !req.file) {
+    return next(new ErrorHandler("Profile picture is required", 400));
+  }
 
   const about = await About.create({
     name,
@@ -34,7 +50,7 @@ export const createAbout = catchAsyncErrors(async (req, res, next) => {
     title,
     bio,
     location,
-    profile_pic: cloud_save.secure_url,
+    profile_pic: profilePicUrl,
   });
 
   res.status(201).json({
@@ -54,12 +70,26 @@ export const getAbout = catchAsyncErrors(async (req, res, next) => {
 
 export const updateAbout = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
-  const { name, email, title, bio, location } = req.body;
+
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = aboutSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
+  const { name, email, title, bio, location, profile_pic } = sanitizedData;
 
   let updateData = { name, email, title, bio, location };
 
+  if (profile_pic) {
+    updateData.profile_pic = profile_pic;
+  }
+
   if (req.file) {
-    const cloud_save = await uploadImage(req.file);
+    const cloud_save = await uploadImage(req.file, { folder: "about" });
     updateData.profile_pic = cloud_save.secure_url;
   }
 
@@ -72,7 +102,7 @@ export const updateAbout = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("About section not found", 404));
   }
 
-  res.status(200).json({ 
+  res.status(200).json({
     success: true,
     message: "About section updated successfully",
     about,

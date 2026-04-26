@@ -1,6 +1,8 @@
 import { Project } from "../Models/Project.models.js";
 import cloudinary from "../Configs/cloudinary.configs.js";
 import { catchAsyncErrors, ErrorHandler } from "../Middlewares/error.middlewares.js";
+import { projectSchema } from "../utils/validation.js";
+import { sanitize } from "../utils/sanitization.js";
 
 const uploadImage = async (file, options = {}) => {
   if (!file) throw new Error("No file provided");
@@ -20,6 +22,15 @@ const uploadImage = async (file, options = {}) => {
 };
 
 export const Createproject = catchAsyncErrors(async (req, res, next) => {
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = projectSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
   const {
     title,
     description,
@@ -28,13 +39,19 @@ export const Createproject = catchAsyncErrors(async (req, res, next) => {
     technologies,
     category,
     featured,
-  } = req.body;
+    image,
+  } = sanitizedData;
 
-  if (!req.file) {
-    return next(new ErrorHandler("Feature image is required", 400));
+  let imageUrl = image;
+
+  if (req.file) {
+    const cloud_save = await uploadImage(req.file, { folder: "projects" });
+    imageUrl = cloud_save.secure_url;
   }
 
-  const cloud_save = await uploadImage(req.file);
+  if (!imageUrl && !req.file) {
+    return next(new ErrorHandler("Project image is required", 400));
+  }
 
   const project = await Project.create({
     title,
@@ -42,8 +59,8 @@ export const Createproject = catchAsyncErrors(async (req, res, next) => {
     technologies: typeof technologies === "string" ? JSON.parse(technologies) : technologies,
     liveUrl,
     sourceUrl,
-    image: cloud_save.secure_url,
-    category: category || "Other",
+    image: imageUrl,
+    category: category || "all",
     featured: featured === "true" || featured === true,
     user: req.user.id,
   });
@@ -57,6 +74,16 @@ export const Createproject = catchAsyncErrors(async (req, res, next) => {
 
 export const UpdateProject = catchAsyncErrors(async (req, res, next) => {
   const id = req.params.id;
+  
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = projectSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
   const {
     title,
     description,
@@ -65,7 +92,8 @@ export const UpdateProject = catchAsyncErrors(async (req, res, next) => {
     sourceUrl,
     category,
     featured,
-  } = req.body;
+    image,
+  } = sanitizedData;
 
   let updateData = {
     title,
@@ -73,12 +101,16 @@ export const UpdateProject = catchAsyncErrors(async (req, res, next) => {
     technologies: typeof technologies === "string" ? JSON.parse(technologies) : technologies,
     liveUrl,
     sourceUrl,
-    category: category || "Other",
+    category: category || "all",
     featured: featured === "true" || featured === true,
   };
 
+  if (image) {
+    updateData.image = image;
+  }
+
   if (req.file) {
-    const cloud_save = await uploadImage(req.file);
+    const cloud_save = await uploadImage(req.file, { folder: "projects" });
     updateData.image = cloud_save.secure_url;
   }
 

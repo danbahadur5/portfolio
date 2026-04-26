@@ -2,8 +2,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import tailwindcss from "@tailwindcss/vite";
-import { compression } from "vite-plugin-compression2";
 import { VitePWA } from "vite-plugin-pwa";
+import { compression } from "vite-plugin-compression2";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -15,17 +15,20 @@ export default defineConfig(({ mode }) => {
       environment: "jsdom",
       setupFiles: "./src/test/setup.ts",
     },
+    css: {
+      transformer: "lightningcss",
+    },
     plugins: [
       react(),
       tailwindcss(),
       VitePWA({
         registerType: "autoUpdate",
-        includeAssets: ["favicon.svg", "apple-touch-icon.png", "robots.txt"],
+        includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
         manifest: {
           name: "Dan Bahadur Bist Portfolio",
           short_name: "DBB Portfolio",
-          description: "Professional portfolio of Dan Bahadur Bist",
-          theme_color: "#ffffff",
+          description: "Full Stack Developer Portfolio",
+          theme_color: "#000000",
           icons: [
             {
               src: "pwa-192x192.png",
@@ -37,82 +40,17 @@ export default defineConfig(({ mode }) => {
               sizes: "512x512",
               type: "image/png",
             },
-            {
-              src: "pwa-512x512.png",
-              sizes: "512x512",
-              type: "image/png",
-              purpose: "any maskable",
-            },
-          ],
-        },
-        workbox: {
-          globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
-          runtimeCaching: [
-            {
-              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-              handler: "CacheFirst",
-              options: {
-                cacheName: "google-fonts-cache",
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365, // <mccoremem id="1" />
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-              },
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-              handler: "CacheFirst",
-              options: {
-                cacheName: "gstatic-fonts-cache",
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365,
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-              },
-            },
-            {
-              urlPattern: /\/api\/.*\/*.*/i,
-              handler: "NetworkFirst",
-              options: {
-                cacheName: "api-cache",
-                expiration: {
-                  maxEntries: 50,
-                  maxAgeSeconds: 60 * 60 * 24, // 24 hours
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-              },
-            },
-            {
-              urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
-              handler: "CacheFirst",
-              options: {
-                cacheName: "images-cache",
-                expiration: {
-                  maxEntries: 100,
-                  maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-              },
-            },
           ],
         },
       }),
-      ...(isProd
-        ? [
-            compression({ algorithm: "gzip" }), // Compress assets in production
-            compression({ algorithm: "brotli" }), // Brotli compression for modern browsers
-          ]
-        : []),
+      compression({
+        algorithm: "gzip",
+        exclude: [/\.(br)$/, /\.(gz)$/],
+      }),
+      compression({
+        algorithm: "brotliCompress",
+        exclude: [/\.(br)$/, /\.(gz)$/],
+      }),
     ],
     resolve: {
       extensions: [".js", ".jsx", ".ts", ".tsx", ".json"],
@@ -121,8 +59,10 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
+      target: "esnext",
       outDir: "dist",
-      sourcemap: !isProd, // Only generate sourcemaps in development
+      cssMinify: true,
+      sourcemap: !isProd,
       minify: "esbuild", // Switched to esbuild to avoid terser dependency issues on Vercel
       rollupOptions: {
         output: {
@@ -167,8 +107,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 5000,
-      open: true,
-    },
+          },
     // Use root path for Vercel static hosting; absolute origins break asset URLs
     base: "/",
     // Enable dependency optimization

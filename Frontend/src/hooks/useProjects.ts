@@ -12,7 +12,17 @@ export const useProjects = () => {
       setIsLoading(true);
       setError(null);
       const res = await api.get('/api/getallproject');
-      setProjects(res.data.projects || []);
+      const normalizedProjects = (res.data.projects || []).map((project: any) => ({
+        ...project,
+        technologies: Array.isArray(project.technologies)
+          ? project.technologies
+          : typeof project.technologies === 'string'
+          ? JSON.parse(project.technologies)
+          : [],
+        category: project.category || 'Other',
+        featured: project.featured === true || project.featured === 'true',
+      }));
+      setProjects(normalizedProjects);
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || 'Failed to fetch projects';
       setError(new Error(errorMsg));

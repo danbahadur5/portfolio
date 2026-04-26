@@ -1,6 +1,8 @@
 import cloudinary from "../Configs/cloudinary.configs.js";
 import { User } from "../Models/User.models.js";
 import { catchAsyncErrors, ErrorHandler } from "../Middlewares/error.middlewares.js";
+import { userSignupSchema, userLoginSchema, userUpdateSchema } from "../utils/validation.js";
+import { sanitize } from "../utils/sanitization.js";
 
 const uploadImage = async (file, options = {}) => {
   if (!file) throw new Error("No file provided");
@@ -20,7 +22,16 @@ const uploadImage = async (file, options = {}) => {
 };
 
 export const Createaccount = catchAsyncErrors(async (req, res, next) => {
-  const { name, email, password, role } = req.body;
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = userSignupSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
+  const { name, email, password, role } = sanitizedData;
 
   const user = await User.findOne({ email });
   if (user) {
@@ -31,7 +42,7 @@ export const Createaccount = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Profile image is required", 400));
   }
 
-  const cloud_save = await uploadImage(req.file);
+  const cloud_save = await uploadImage(req.file, { folder: "users" });
 
   const newuser = await User.create({
     name,
@@ -49,7 +60,16 @@ export const Createaccount = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const Login = catchAsyncErrors(async (req, res, next) => {
-  const { email, password } = req.body || {};
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = userLoginSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
+  const { email, password } = sanitizedData;
 
   const normalizedEmail = email.trim().toLowerCase();
 
@@ -105,7 +125,16 @@ export const Logout = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const Updateaccount = catchAsyncErrors(async (req, res, next) => {
-  const { name, email, password, role } = req.body;
+  // 1. Sanitize input
+  const sanitizedData = sanitize(req.body);
+
+  // 2. Validate input
+  const { error } = userUpdateSchema.validate(sanitizedData);
+  if (error) {
+    return next(new ErrorHandler(error.details[0].message, 400));
+  }
+
+  const { name, email, password, role } = sanitizedData;
   const { id } = req.user;
 
   const user = await User.findById(id);
@@ -119,14 +148,19 @@ export const Updateaccount = catchAsyncErrors(async (req, res, next) => {
   user.role = role || user.role;
 
   if (req.file) {
-    const cloud_save = await uploadImage(req.file);
+    const cloud_save = await uploadImage(req.file, { folder: "users" });
     user.profile_pic = cloud_save.secure_url;
   }
 
   await user.save();
+  
+  const safeUser = user.toObject();
+  delete safeUser.password;
+  delete safeUser.__v;
+
   res.status(200).json({
     success: true,
-    user,
+    user: safeUser,
     message: "Account updated successfully",
   });
 });
