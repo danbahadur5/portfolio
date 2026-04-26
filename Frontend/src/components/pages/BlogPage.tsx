@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Search, Calendar, Clock, Tag, ArrowRight, Sparkles, Code2, Rocket, Heart, Coffee } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 
 export function ScrollProgress() {
   const [scrollProgress, setScrollProgress] = useState(0);
