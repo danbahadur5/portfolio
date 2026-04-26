@@ -99,8 +99,8 @@ export const validateCSRF = catchAsyncErrors(async (req, res, next) => {
     return next();
   }
 
-  const csrfToken = req.cookies.csrf_token ||
-    req.body.csrfToken ||
+  const csrfToken = req.cookies?.csrf_token ||
+    req.body?.csrfToken ||
     req.headers["x-csrf-token"];
 
   if (!csrfToken) {
