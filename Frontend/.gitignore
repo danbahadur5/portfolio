@@ -2,6 +2,8 @@
 node_modules
 dist
 /.next
+.vite_cache
+./vite_cache
 /.env.test
 .vite_cache
 
