@@ -1,9 +1,13 @@
 import mongoose from "mongoose";
 
-let isConnected = false;
-
 export const connectDB = async () => {
-    if (isConnected) {
+    // Check if we have a connection and if it's ready
+    if (mongoose.connection.readyState === 1) {
+        return;
+    }
+
+    // If it's connecting, wait a bit or return
+    if (mongoose.connection.readyState === 2) {
         return;
     }
 
@@ -13,18 +17,16 @@ export const connectDB = async () => {
             throw new Error("MONGODB_URL is not defined in environment variables.");
         }
 
-        const db = await mongoose.connect(MONGODB_URL, {
+        await mongoose.connect(MONGODB_URL, {
             serverSelectionTimeoutMS: 5000,
+            maxPoolSize: 10, // Maintain up to 10 socket connections
         });
 
-        isConnected = db.connections[0].readyState;
         console.log("✅ Database connected");
     } catch (error) {
         console.error("❌ Database connection failed:", error.message);
-        // Don't exit process in serverless
-        if (process.env.NODE_ENV !== 'production') {
-            process.exit(1);
-        }
+        // Do NOT call process.exit(1) in any environment when running as a serverless function
+        // Throw the error so the request that triggered it fails, but the instance stays alive for next try
         throw error;
     }
 };

@@ -10,6 +10,36 @@ const consoleFormat = printf(({ level, message, timestamp, stack, ...meta }) => 
   }`;
 });
 
+const transports = [];
+
+// Only add File transport if not on Vercel/Production
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  transports.push(
+    new winston.transports.File({ 
+      filename: path.join('logs', 'error.log'), 
+      level: 'error',
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
+    }),
+    new winston.transports.File({ 
+      filename: path.join('logs', 'combined.log'),
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
+    })
+  );
+}
+
+// Always add Console transport in all environments
+transports.push(
+  new winston.transports.Console({
+    format: combine(
+      colorize(),
+      timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+      consoleFormat
+    ),
+  })
+);
+
 const logger = winston.createLogger({
   level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
   format: combine(
@@ -18,32 +48,7 @@ const logger = winston.createLogger({
     json()
   ),
   defaultMeta: { service: 'portfolio-backend' },
-  transports: [
-    // Write all logs with importance level of `error` or less to `error.log`
-    new winston.transports.File({ 
-      filename: path.join('logs', 'error.log'), 
-      level: 'error',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    }),
-    // Write all logs with importance level of `info` or less to `combined.log`
-    new winston.transports.File({ 
-      filename: path.join('logs', 'combined.log'),
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    }),
-  ],
+  transports: transports,
 });
-
-// If we're not in production then log to the `console` with colors
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: combine(
-      colorize(),
-      timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-      consoleFormat
-    ),
-  }));
-}
 
 export default logger;

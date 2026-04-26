@@ -5,7 +5,10 @@ import crypto from "crypto";
 
 const logDir = process.env.LOG_DIR || "./logs";
 
-if (!fs.existsSync(logDir)) {
+// Only create log directory and add file transport if not on Vercel/Production
+const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL;
+
+if (!isProduction && !fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
 }
 
@@ -56,27 +59,32 @@ const transports = [
     format: consoleFormat,
     level: process.env.LOG_LEVEL || "info",
   }),
-  new winston.transports.File({
-    filename: path.join(logDir, "error.log"),
-    level: "error",
-    format: fileFormat,
-    maxsize: 5242880,
-    maxFiles: 5,
-  }),
-  new winston.transports.File({
-    filename: path.join(logDir, "combined.log"),
-    format: fileFormat,
-    maxsize: 5242880,
-    maxFiles: 5,
-  }),
-  new winston.transports.File({
-    filename: path.join(logDir, "http.log"),
-    level: "http",
-    format: fileFormat,
-    maxsize: 5242880,
-    maxFiles: 5,
-  }),
 ];
+
+if (!isProduction) {
+  transports.push(
+    new winston.transports.File({
+      filename: path.join(logDir, "error.log"),
+      level: "error",
+      format: fileFormat,
+      maxsize: 5242880,
+      maxFiles: 5,
+    }),
+    new winston.transports.File({
+      filename: path.join(logDir, "combined.log"),
+      format: fileFormat,
+      maxsize: 5242880,
+      maxFiles: 5,
+    }),
+    new winston.transports.File({
+      filename: path.join(logDir, "http.log"),
+      level: "http",
+      format: fileFormat,
+      maxsize: 5242880,
+      maxFiles: 5,
+    })
+  );
+}
 
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || "info",
@@ -87,23 +95,23 @@ const logger = winston.createLogger({
 });
 
 export class ErrorLogger {
-  private static instance: ErrorLogger;
-  private errorId: Map<string, number> = new Map();
+  static instance;
+  errorId = new Map();
 
-  private constructor() {}
+  constructor() {}
 
-  static getInstance(): ErrorLogger {
+  static getInstance() {
     if (!ErrorLogger.instance) {
       ErrorLogger.instance = new ErrorLogger();
     }
     return ErrorLogger.instance;
   }
 
-  generateErrorId(): string {
+  generateErrorId() {
     return crypto.randomBytes(4).toString("hex").toUpperCase();
   }
 
-  logError(error: Error, context?: any): string {
+  logError(error, context) {
     const errorId = this.generateErrorId();
     const errorData = {
       errorId,
@@ -119,7 +127,7 @@ export class ErrorLogger {
     return errorId;
   }
 
-  logRequest(req: any, error?: Error) {
+  logRequest(req, error) {
     const requestData = {
       method: req.method,
       url: req.originalUrl || req.url,
@@ -150,7 +158,7 @@ export class ErrorLogger {
     }
   }
 
-  logAuth(userId: string, action: string, success: boolean, metadata?: any) {
+  logAuth(userId, action, success, metadata) {
     const level = success ? "info" : "warn";
     logger[level](`Auth ${action} for user ${userId}`, {
       userId,
@@ -160,7 +168,7 @@ export class ErrorLogger {
     });
   }
 
-  logDatabase(operation: string, collection: string, duration: number, metadata?: any) {
+  logDatabase(operation, collection, duration, metadata) {
     logger.info(`Database ${operation} on ${collection}`, {
       operation,
       collection,
@@ -169,7 +177,7 @@ export class ErrorLogger {
     });
   }
 
-  logSecurity(event: string, severity: "low" | "medium" | "high", details: any) {
+  logSecurity(event, severity, details) {
     const logLevel = severity === "high" ? "error" : severity === "medium" ? "warn" : "info";
     logger[logLevel](`Security: ${event}`, {
       event,
@@ -179,7 +187,7 @@ export class ErrorLogger {
     });
   }
 
-  logPerformance(operation: string, duration: number, metadata?: any) {
+  logPerformance(operation, duration, metadata) {
     const level = duration > 1000 ? "warn" : "info";
     logger[level](`Performance: ${operation}`, {
       operation,
@@ -188,15 +196,14 @@ export class ErrorLogger {
     });
   }
 
-  private sanitizeBody(body: any): any {
+  sanitizeBody(body) {
     if (!body) return body;
-
     const sanitized = { ...body };
-    const sensitiveFields = ["password", "token", "secret", "apiKey", "authorization", "cookie"];
+    const sensitiveFields = ["password", "token", "secret", "credit_card", "cvv"];
 
     for (const field of sensitiveFields) {
-      if (sanitized[field]) {
-        sanitized[field] = "[REDACTED]";
+      if (field in sanitized) {
+        sanitized[field] = "********";
       }
     }
 
@@ -206,7 +213,7 @@ export class ErrorLogger {
 
 export const errorLogger = ErrorLogger.getInstance();
 
-export const requestLogger = (req: any, res: any, next: any) => {
+export const requestLogger = (req, res, next) => {
   const startTime = Date.now();
 
   res.on("finish", () => {

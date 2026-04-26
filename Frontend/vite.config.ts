@@ -63,33 +63,12 @@ export default defineConfig(({ mode }) => {
       outDir: "dist",
       cssMinify: true,
       sourcemap: !isProd,
-      minify: "esbuild", // Switched to esbuild to avoid terser dependency issues on Vercel
+      minify: "esbuild",
       rollupOptions: {
         output: {
           manualChunks(id) {
             if (id.includes("node_modules")) {
-              if (id.includes("react") || id.includes("react-dom") || id.includes("react-router-dom")) {
-                return "vendor-core";
-              }
-              if (id.includes("@radix-ui")) {
-                return "vendor-ui";
-              }
-              if (id.includes("framer-motion") || id.includes("motion")) {
-                return "vendor-animation";
-              }
-              if (id.includes("lucide-react")) {
-                return "vendor-icons";
-              }
-              if (id.includes("recharts")) {
-                return "vendor-charts";
-              }
-              return "vendor-others";
-            }
-            if (id.includes("/src/components/ui")) {
-              return "ui-components";
-            }
-            if (id.includes("/src/components/dashboard")) {
-              return "dashboard-components";
+              return "vendor";
             }
           },
           // Use hashed filenames for better caching

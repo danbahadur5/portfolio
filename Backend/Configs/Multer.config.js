@@ -4,7 +4,7 @@ import path from "path";
 
 const uploadsDir = path.resolve(process.cwd(), "uploads");
 
-const isProd = process.env.NODE_ENV === "production";
+const isProd = process.env.NODE_ENV === "production" || process.env.VERCEL;
 
 const storage = isProd
   ? multer.memoryStorage()
