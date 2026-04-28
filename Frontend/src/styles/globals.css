@@ -326,6 +326,79 @@
       backdrop-filter: blur(16px);
     }
   }
+
+  /* Cursor Trail Effect */
+  .cursor-trail {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    border-radius: 50%;
+    animation: cursorTrailFade 1s ease-out forwards;
+  }
+
+  @keyframes cursorTrailFade {
+    0% {
+      opacity: 1;
+      transform: scale(1) translate(0, 0);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0) translate(var(--tx), var(--ty));
+    }
+  }
+
+  /* Entrance Wave Effect */
+  .entrance-wave {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 9998;
+    background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), 
+      var(--color-primary) 0%, 
+      transparent 70%);
+    opacity: 0;
+    animation: waveExpand 1.5s ease-out forwards;
+  }
+
+  @keyframes waveExpand {
+    0% {
+      opacity: 0.3;
+      transform: scale(0);
+    }
+    50% {
+      opacity: 0.15;
+    }
+    100% {
+      opacity: 0;
+      transform: scale(3);
+    }
+  }
+
+  /* Particle Sparkle Effect */
+  .particle-sparkle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9997;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    animation: sparkleFloat 2s ease-out forwards;
+  }
+
+  @keyframes sparkleFloat {
+    0% {
+      opacity: 1;
+      transform: translate(0, 0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(var(--tx), var(--ty)) scale(0);
+    }
+  }
 }
 
 .dark {

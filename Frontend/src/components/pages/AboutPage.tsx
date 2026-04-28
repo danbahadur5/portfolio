@@ -370,10 +370,10 @@ export function AboutPage() {
                           </div>
                           <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-8 rounded-[2rem] bg-card border border-border/50 shadow-sm group-hover:border-primary/30 transition-all">
                             <div className="flex items-center justify-between mb-2">
-                              <time className="text-[10px] font-black uppercase tracking-widest text-primary">2021 - Present</time>
+                              <time className="text-[10px] font-black uppercase tracking-widest text-primary">2024 - Present</time>
                               <Badge variant="outline" className="text-[9px] uppercase tracking-tighter">Remote</Badge>
                             </div>
-                            <div className="text-xl font-bold mb-1">Senior Software Engineer</div>
+                            <div className="text-xl font-bold mb-1">Full Stack Developer</div>
                             <div className="text-sm text-muted-foreground font-medium mb-4">TechInnovate Solutions</div>
                             <p className="text-sm text-muted-foreground font-light leading-relaxed">
                               Leading a team of 5 developers in architecting and implementing large-scale cloud applications using React and Node.js.
@@ -388,7 +388,7 @@ export function AboutPage() {
                           </div>
                           <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-8 rounded-[2rem] bg-card border border-border/50 shadow-sm group-hover:border-primary/30 transition-all">
                             <div className="flex items-center justify-between mb-2">
-                              <time className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">2019 - 2021</time>
+                              <time className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">2023 - 2024</time>
                             </div>
                             <div className="text-xl font-bold mb-1">Full-Stack Developer</div>
                             <div className="text-sm text-muted-foreground font-medium mb-4">Digital Pulse Agency</div>
@@ -405,12 +405,12 @@ export function AboutPage() {
                           </div>
                           <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-8 rounded-[2rem] bg-card border border-border/50 shadow-sm group-hover:border-primary/30 transition-all">
                             <div className="flex items-center justify-between mb-2">
-                              <time className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">2015 - 2019</time>
+                              <time className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">2020 - 2023</time>
                             </div>
-                            <div className="text-xl font-bold mb-1">B.Sc. in Computer Science</div>
-                            <div className="text-sm text-muted-foreground font-medium mb-4">University of Technology</div>
+                            <div className="text-xl font-bold mb-1">Diplom in Information Technology</div>
+                            <div className="text-sm text-muted-foreground font-medium mb-4">CTEVT</div>
                             <p className="text-sm text-muted-foreground font-light leading-relaxed">
-                              Graduated with Honors, specializing in Software Engineering and Distributed Systems.
+                              Graduated with Honors, specializing in Web Development and Distributed Systems.
                             </p>
                           </div>
                         </div>
@@ -424,42 +424,7 @@ export function AboutPage() {
         </div>
       </section>
 
-      {/* Connect Section */}
-      <section className="py-24 px-4 relative overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center space-y-12">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="space-y-6"
-          >
-            <h2 className="text-5xl md:text-7xl font-heading font-black tracking-tighter">
-              Let's build <br /> <span className="text-gradient">Something Great.</span>
-            </h2>
-            <p className="text-xl text-muted-foreground font-light max-w-2xl mx-auto">
-              I'm always open to new opportunities, collaborations, or just a friendly chat about technology.
-            </p>
-          </motion.div>
-
-          <div className="flex flex-wrap justify-center gap-6">
-            <Button size="lg" className="rounded-full h-16 px-10 text-lg font-bold shadow-xl shadow-primary/20 hover:scale-105 transition-all">
-              Start a Project
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="icon" className="w-16 h-16 rounded-full border-border/50 hover:bg-primary/5 hover:text-primary transition-all">
-                <Github className="w-6 h-6" />
-              </Button>
-              <Button variant="outline" size="icon" className="w-16 h-16 rounded-full border-border/50 hover:bg-primary/5 hover:text-primary transition-all">
-                <Linkedin className="w-6 h-6" />
-              </Button>
-              <Button variant="outline" size="icon" className="w-16 h-16 rounded-full border-border/50 hover:bg-primary/5 hover:text-primary transition-all">
-                <Twitter className="w-6 h-6" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+     
     </Layout>
   );
 }

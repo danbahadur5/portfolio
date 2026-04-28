@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { SiteProvider } from "./contexts/SiteContext";
 import { Loader2 } from "lucide-react";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { CursorTrail } from "./components/CursorTrail";
 
 const HomePage = lazy(() => import("./components/pages/HomePage").then(m => ({ default: m.HomePage })));
 const ProjectsPage = lazy(() => import("./components/pages/ProjectsPage").then(m => ({ default: m.ProjectsPage })));
@@ -76,6 +77,7 @@ export default function App() {
         <AuthProvider>
           <SiteProvider>
             <Router>
+              <CursorTrail enabled={true} />
               <AppRoutes />
             </Router>
           </SiteProvider>

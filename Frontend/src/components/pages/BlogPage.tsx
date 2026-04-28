@@ -52,7 +52,7 @@ export function BlogPage() {
   return (
     <Layout>
       {/* Dynamic Hero Section */}
-      <section className="relative responsive-section overflow-hidden">
+      <section className="relative responsive-section overflow-hidden bg-gradient-to-b from-muted/20 to-muted/40 dark:from-muted/10 dark:to-muted/20">
         {/* Background Decorative Layer */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
           <div className="absolute top-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-primary/5 rounded-full blur-[120px] animate-pulse" />
@@ -97,21 +97,6 @@ export function BlogPage() {
       {/* Articles Feed */}
       <section className="responsive-section bg-muted/30 dark:bg-muted/10 border-y border-primary/5" aria-label="Articles Feed">
         <div className="responsive-container">
-          <div className="flex flex-col sm:flex-row items-center justify-between mb-16 md:mb-24 gap-6">
-            <div className="space-y-2 text-center sm:text-left">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-black tracking-tighter flex items-center justify-center sm:justify-start gap-4">
-                <div className="p-2 bg-primary/10 rounded-xl">
-                  <Clock className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-                </div>
-                Recent Perspectives
-              </h2>
-              <p className="text-muted-foreground font-medium text-sm md:text-base">Deep dives into the latest in technology and design.</p>
-            </div>
-            <div className="text-[12px] font-black text-primary uppercase tracking-[0.2em] bg-primary/10 px-6 py-3 rounded-full border border-primary/20 shadow-lg shadow-primary/5">
-              {filteredPosts.length} Articles Found
-            </div>
-          </div>
-
           <div className="grid-portfolio">
             <AnimatePresence mode="popLayout">
               {filteredPosts.length > 0 ? (
@@ -123,62 +108,59 @@ export function BlogPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="group relative flex flex-col bg-card/50 backdrop-blur-xl rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden border border-primary/5 dark:border-white/5 shadow-2xl transition-all duration-700 h-full hover-lift group/blog-card"
+                    className="group relative flex flex-col bg-card/50 backdrop-blur-xl rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden border border-primary/5 dark:border-white/5 shadow-2xl transition-all duration-700 h-full hover-lift group/blog-card"
                   >
                     {/* Decorative Glow */}
                     <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/10 blur-[60px] rounded-full opacity-0 group-hover/blog-card:opacity-100 transition-opacity duration-700" />
 
-                    <div className="aspect-video overflow-hidden relative isolation-isolate rounded-t-[inherit]">
+                    <div className="aspect-[16/10] overflow-hidden relative isolation-isolate rounded-t-[inherit]">
                       <ImageWithFallback 
                         src={post.image || post.featuredImage} 
                         alt={post.title} 
                         className="img-responsive transition-transform duration-[1.5s] ease-out group-hover/blog-card:scale-110" 
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover/blog-card:opacity-60 transition-opacity duration-700" />
-                      
-                      <div className="absolute top-6 left-6 flex flex-wrap gap-2">
-                        {post.tags?.slice(0, 2).map((tag: string) => (
-                          <span key={tag} className="px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-[10px] font-black uppercase tracking-widest text-white shadow-xl">
-                            {tag}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-60 group-hover/blog-card:opacity-80 transition-all duration-700 flex items-end p-4 lg:p-6">
+                        <div className="text-white transform translate-y-2 group-hover/blog-card:translate-y-0 transition-transform duration-700">
+                          <span className="text-[7px] font-black uppercase tracking-[0.2em] text-primary mb-1.5 block">
+                            {post.tags?.[0] || "Article"}
                           </span>
-                        ))}
+                          <h3 className="text-lg lg:text-xl xl:text-2xl font-black tracking-tighter leading-tight line-clamp-2">
+                            {post.title}
+                          </h3>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="p-6 sm:p-8 lg:p-10 flex flex-col flex-1 relative">
-                      <div className="flex items-center gap-4 mb-6 text-[11px] font-black uppercase tracking-[0.2em] text-primary/60">
-                        <span className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
+                    <div className="p-5 flex flex-col flex-1 relative">
+                      <div className="flex items-center gap-3 mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-primary/60">
+                        <span className="flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5" />
                           {new Date(post.createdAt || post.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary/20" />
-                        <span className="flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
+                        <span className="w-1 h-1 rounded-full bg-primary/20" />
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5" />
                           {post.readTime || "5 min read"}
                         </span>
                       </div>
 
-                      <h3 className="text-xl sm:text-2xl lg:text-3xl font-heading font-black leading-tight mb-6 group-hover/blog-card:text-primary transition-colors duration-500 line-clamp-2 tracking-tight">
-                        {post.title}
-                      </h3>
-                      
-                      <p className="text-base text-muted-foreground font-medium leading-relaxed mb-8 line-clamp-3">
+                      <p className="text-sm lg:text-base text-muted-foreground font-medium leading-relaxed mb-4 line-clamp-2">
                         {post.excerpt || post.content.replace(/[#*`]/g, '').slice(0, 140)}...
                       </p>
 
-                      <div className="mt-auto pt-8 border-t border-primary/5 flex items-center justify-between">
+                      <div className="mt-auto pt-4 border-t border-primary/5 flex items-center justify-between">
                         <Button 
                           variant="ghost" 
-                          className="p-0 h-auto text-primary font-black text-[12px] uppercase tracking-[0.2em] hover:bg-transparent group/btn inline-flex items-center gap-4 touch-target focus-ring"
+                          className="p-0 h-auto text-primary font-black text-[9px] uppercase tracking-[0.2em] hover:bg-transparent group/btn inline-flex items-center gap-2 touch-target focus-ring"
                           aria-label={`Read article: ${post.title}`}
                         >
                           Read Article
-                          <div className="w-8 h-px bg-primary/30 group-hover/btn:w-16 group-hover/btn:bg-primary transition-all duration-700" />
-                          <ArrowRight className="w-4 h-4 -translate-x-4 opacity-0 group-hover/btn:translate-x-0 group-hover/btn:opacity-100 transition-all duration-700" />
+                          <div className="w-6 h-px bg-primary/30 group-hover/btn:w-10 group-hover/btn:bg-primary transition-all duration-700" />
+                          <ArrowRight className="w-3 h-3 -translate-x-2 opacity-0 group-hover/btn:translate-x-0 group-hover/btn:opacity-100 transition-all duration-700" />
                         </Button>
-                        <div className="flex items-center gap-2 text-muted-foreground/40 group-hover/blog-card:text-primary/40 transition-colors duration-700">
-                          <Heart className="w-4 h-4" />
-                          <span className="text-xs font-bold">24</span>
+                        <div className="flex items-center gap-1.5 text-muted-foreground/40 group-hover/blog-card:text-primary/40 transition-colors duration-700">
+                          <Heart className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-bold">24</span>
                         </div>
                       </div>
                     </div>
@@ -198,60 +180,6 @@ export function BlogPage() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
-        </div>
-      </section>
-
-      {/* Modern Newsletter CTA */}
-      <section className="responsive-section overflow-hidden relative">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] bg-primary/5 rounded-full blur-[150px]" />
-        </div>
-        
-        <div className="responsive-container relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center max-w-6xl mx-auto">
-            <div className="text-center lg:text-left space-y-8">
-              <div className="inline-flex p-4 rounded-3xl bg-primary/10 text-primary mb-2 shadow-xl shadow-primary/5">
-                <Coffee className="w-8 h-8" />
-              </div>
-              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-heading font-black tracking-tighter leading-[0.85]">
-                Weekly <br /> <span className="text-gradient">Curations</span>
-              </h2>
-              <p className="responsive-text-body text-muted-foreground font-medium leading-relaxed max-w-md mx-auto lg:mx-0">
-                Join <span className="text-foreground font-bold">2,000+ developers</span> receiving deep dives into the future of digital craftsmanship.
-              </p>
-            </div>
-            
-            <div className="bg-card/50 backdrop-blur-2xl p-8 md:p-12 rounded-[3.5rem] border border-primary/5 shadow-2xl hover-lift transition-all duration-700">
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <label htmlFor="newsletter-email" className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 ml-4">
-                    Email Address
-                  </label>
-                  <Input 
-                    id="newsletter-email"
-                    placeholder="architect@future.dev" 
-                    className="h-16 rounded-[1.5rem] border-primary/10 bg-background/50 shadow-inner px-8 focus-ring text-lg font-medium placeholder:text-muted-foreground/30"
-                  />
-                </div>
-                <Button className="w-full h-16 rounded-[1.5rem] font-black text-[12px] uppercase tracking-[0.2em] shadow-2xl shadow-primary/20 hover:shadow-primary/40 transition-all duration-500 hover:scale-[1.02] active:scale-95">
-                  Join the library
-                  <ArrowRight className="w-5 h-5 ml-3" />
-                </Button>
-                <div className="flex items-center justify-center gap-4 pt-4">
-                  <div className="flex -space-x-3">
-                    {[1,2,3].map(i => (
-                      <div key={i} className="w-8 h-8 rounded-full border-2 border-card bg-muted flex items-center justify-center text-[10px] font-bold">
-                        U{i}
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">
-                    No spam. Zero noise. Unsubscribe anytime.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>

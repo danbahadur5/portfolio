@@ -311,53 +311,52 @@ export function HomePage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8, duration: 0.5 }}
-                  className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 md:gap-6 mb-8 md:mb-12"
+                  className="flex flex-row items-center gap-2 md:gap-2 mb-8 md:mb-12"
                 >
-                  <div className="flex-1 sm:flex-initial">
-                    <Button
-                      size="lg"
-                      onClick={handleHireClick}
-                      disabled={isHiring || hired}
-                      className={`relative overflow-hidden w-full sm:w-auto h-12 md:h-14 px-8 md:px-12 rounded-2xl text-lg font-bold tracking-tight shadow-xl transition-all duration-300 group cursor-pointer ${
-                        hired 
-                          ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20" 
-                          : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30"
-                      } active:scale-95 focus-ring`}
-                    >
-                      <motion.div
-                        className="absolute inset-0 bg-white/20"
-                        initial={{ scale: 0, opacity: 0 }}
-                        whileTap={{ scale: 4, opacity: 1, transition: { duration: 0.4 } }}
-                        style={{ originX: "50%", originY: "50%", borderRadius: "100%" }}
-                      />
-                      <span className="relative z-10 flex items-center justify-center">
-                        {isHiring ? (
-                          <>
-                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            Processing...
-                          </>
-                        ) : hired ? (
-                          <>
-                            <Check className="w-5 h-5 mr-2 animate-bounce" />
-                            Lets Go!
-                          </>
-                        ) : (
-                          <>
-                            Hire Me
-                            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1.5 transition-transform duration-300" />
-                          </>
-                        )}
-                      </span>
-                    </Button>
-                  </div>
+                  <Button
+                    size="lg"
+                    onClick={handleHireClick}
+                    disabled={isHiring || hired}
+                    className={`relative overflow-hidden sm:flex-initial h-11 md:h-14 px-6 md:px-12 rounded-xl md:rounded-2xl text-sm md:text-lg font-bold tracking-tight shadow-xl transition-all duration-300 group cursor-pointer ${
+                      hired 
+                        ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20" 
+                        : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30"
+                    } active:scale-95 focus-ring`}
+                  >
+                    <motion.div
+                      className="absolute inset-0 bg-white/20"
+                      initial={{ scale: 0, opacity: 0 }}
+                      whileTap={{ scale: 4, opacity: 1, transition: { duration: 0.4 } }}
+                      style={{ originX: "50%", originY: "50%", borderRadius: "100%" }}
+                    />
+                    <span className="relative z-10 flex items-center justify-center gap-1.5 md:gap-2">
+                      {isHiring ? (
+                        <>
+                          <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
+                          <span className="text-xs md:text-base">Processing...</span>
+                        </>
+                      ) : hired ? (
+                        <>
+                          <Check className="w-4 h-4 md:w-5 md:h-5 animate-bounce" />
+                          <span className="text-xs md:text-base">Lets Go!</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-xs md:text-base">Hire Me</span>
+                          <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1.5 transition-transform duration-300" />
+                        </>
+                      )}
+                    </span>
+                  </Button>
+                  
                   <Link
                     to="/projects"
-                    className="flex-1 sm:flex-initial group flex items-center justify-center gap-3 text-lg font-bold tracking-tight text-foreground/70 hover:text-primary transition-all duration-300 cursor-pointer border border-primary/20 hover:border-primary/50 rounded-2xl py-3 md:py-4 px-6 md:px-8 lg:border-0 lg:py-0 lg:px-0 lg:justify-start touch-target"
+                    className="group flex items-center justify-center gap-2 md:gap-3 text-sm md:text-lg font-bold tracking-tight text-foreground/70 hover:text-primary transition-all duration-300 cursor-pointer  rounded-xl md:rounded-2xl py-2.5 md:py-4 px-4 md:px-8 touch-target"
                   >
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-primary/10 flex items-center justify-center group-hover:border-primary group-hover:bg-primary/5 transition-all duration-300 group-hover:scale-110">
-                      <MousePointer2 className="w-4 h-4" />
+                    <div className="w-8 h-8 md:w-12 md:h-12 rounded-full border-2 border-primary/10 flex items-center justify-center group-hover:border-primary group-hover:bg-primary/5 transition-all duration-300 group-hover:scale-110 ">
+                      <MousePointer2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </div>
-                    <span className="sm:inline">Portfolio</span>
+                    <span className="text-xs md:text-base">Portfolio</span>
                   </Link>
                 </motion.div>
 
@@ -366,23 +365,25 @@ export function HomePage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1, duration: 0.5 }}
-                  className="flex flex-col sm:flex-row items-center lg:items-center gap-6 md:gap-10 pt-6 md:pt-8 border-t border-primary/5 dark:border-white/5"
+                  className="flex flex-row items-center gap-2 md:gap-2 pt-2 md:pt-4 border-t border-primary/5 dark:border-white/5"
                 >
-                  <div className="flex items-center gap-3 md:gap-4 group cursor-default order-2 sm:order-1">
-                    <div className="w-10 h-10 md:w-11 md:h-11 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center group-hover:bg-primary/10 transition-colors touch-target">
+                  <div className="flex items-center gap-2 md:gap-3 group cursor-default flex-shrink-0">
+                    <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl md:rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center group-hover:bg-primary/10 transition-colors touch-target">
                       <MapPin className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                     </div>
                     <div className="text-left">
-                      <div className="text-[10px] md:text-[8px] font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-muted-foreground mb-0.5">
+                      <div className="text-[8px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-0.5">
                         Location
                       </div>
-                      <div className="text-sm md:text-[13px] font-bold tracking-tight text-foreground">
-                        {homeContent?.location || "Remote / Global"}
+                      <div className="text-xs md:text-[13px] font-bold tracking-tight text-foreground">
+                        {homeContent?.location || "Remote"}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 md:gap-4 order-1 sm:order-2">
+                  <div className="w-px h-8 md:h-10 bg-border/50 flex-shrink-0" />
+
+                  <div className="flex items-center gap-2 md:gap-3">
                     {socialLinks.map((social) => (
                       <motion.a
                         key={social.label}
@@ -390,7 +391,7 @@ export function HomePage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         whileHover={{ y: -2, scale: 1.05 }}
-                        className={`w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-xl bg-white dark:bg-white/5 border border-primary/10 dark:border-white/10 transition-all duration-300 shadow-xl shadow-primary/5 ${social.color} touch-target focus-ring`}
+                        className={`w-9 h-9 md:w-11 md:h-11 flex items-center justify-center rounded-lg md:rounded-xl bg-white dark:bg-white/5 border border-primary/10 dark:border-white/10 transition-all duration-300 shadow-lg md:shadow-xl shadow-primary/5 ${social.color} touch-target focus-ring flex-shrink-0`}
                         aria-label={social.label}
                       >
                         <social.icon className="w-4 h-4 md:w-5 md:h-5" />

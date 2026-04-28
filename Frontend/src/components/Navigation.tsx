@@ -247,7 +247,7 @@ export function Navigation() {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[90vw] max-w-[380px] sm:w-[380px] p-0 border-l-border/50">
+              <SheetContent side="right" className="w-[90vw] max-w-[380px] sm:w-[380px] p-0 border-l-border/50 [&>button]:hidden">
                 <div className="flex flex-col h-full bg-background/95 backdrop-blur-xl">
                   <div className="p-8 border-b border-border/50 flex items-center justify-between">
                     <Logo size="md" shortForm={true} />

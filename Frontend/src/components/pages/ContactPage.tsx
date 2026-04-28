@@ -289,7 +289,7 @@ export function ContactPage() {
                                   message: "Name must be at least 2 characters",
                                 },
                               })}
-                              placeholder="e.g. John Doe"
+                              placeholder="eg. Smith Shahi"
                               aria-invalid={errors.name ? "true" : "false"}
                               aria-describedby={errors.name ? "name-error" : undefined}
                               className={`h-10 rounded-xl border-none bg-muted/50 px-4 font-sans text-sm transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 placeholder:text-foreground/60 ${errors.name ? "ring-2 ring-destructive/20" : ""}`}
@@ -320,7 +320,7 @@ export function ContactPage() {
                                   message: "Invalid email address",
                                 },
                               })}
-                              placeholder="e.g. john@example.com"
+                              placeholder="e.g. info@example.com"
                               aria-invalid={errors.email ? "true" : "false"}
                               aria-describedby={errors.email ? "email-error" : undefined}
                               className={`h-10 rounded-xl border-none bg-muted/50 px-4 font-sans text-sm transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 placeholder:text-foreground/60 ${errors.email ? "ring-2 ring-destructive/20" : ""}`}
@@ -459,7 +459,7 @@ export function ContactPage() {
                           <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full h-10 rounded-xl font-black text-xs uppercase tracking-widest bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all group"
+                            className="w-full h-10 cursor-pointer rounded-xl font-black text-xs uppercase tracking-widest bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all group"
                           >
                             {isSubmitting ? (
                               <div className="flex items-center gap-2">
