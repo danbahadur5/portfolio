@@ -59,7 +59,7 @@ export function SearchFilter({
   return (
     <div className={`w-full max-w-4xl mx-auto space-y-6 ${className}`}>
       {/* Main Search and Filter Row */}
-      <div className="flex flex-col md:flex-row gap-4" role="search" aria-label="Project and blog filters">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4" role="search" aria-label="Project and blog filters">
         <div className={`relative flex-1 group transition-all duration-300 ${isFocused ? 'ring-2 ring-primary/20 scale-[1.01]' : ''}`}>
           <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2" aria-hidden="true">
             <Search className={`w-5 h-5 transition-colors duration-300 ${isFocused ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -95,14 +95,14 @@ export function SearchFilter({
           </AnimatePresence>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
           {/* Enhanced Category Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
                 aria-label={`Filter by category. Current: ${selectedCategory}`}
-                className={`h-10 px-4 rounded-xl border-none bg-card shadow-lg shadow-black/[0.03] dark:shadow-white/[0.02] gap-2 text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98] ${selectedCategory !== 'All' ? 'text-primary' : ''}`}
+                className={`h-10 px-4 rounded-xl border-none bg-card shadow-lg shadow-black/[0.03] dark:shadow-white/[0.02] gap-2 text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto ${selectedCategory !== 'All' ? 'text-primary' : ''}`}
               >
                 <ListFilter className="w-4 h-4" />
                 <span className="hidden sm:inline">Category:</span> {selectedCategory}
@@ -136,7 +136,7 @@ export function SearchFilter({
               <Button 
                 variant="outline" 
                 aria-label={`Filter by technology. ${selectedTech.length} selected`}
-                className={`h-10 px-4 rounded-xl border-none bg-card shadow-lg shadow-black/[0.03] dark:shadow-white/[0.02] gap-2 text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98] ${selectedTech.length > 0 ? 'text-primary' : ''}`}
+                className={`h-10 px-4 rounded-xl border-none bg-card shadow-lg shadow-black/[0.03] dark:shadow-white/[0.02] gap-2 text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto ${selectedTech.length > 0 ? 'text-primary' : ''}`}
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 <span className="hidden sm:inline">Tech</span>

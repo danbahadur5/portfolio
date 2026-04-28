@@ -222,7 +222,7 @@ export function HomePage() {
     <Layout>
       {/* Hero Section - Compact & Professional Layout */}
       <section
-        className="relative min-h-[90vh] flex items-center justify-center pb-8 md:pb-16"
+        className="relative min-h-[80vh] md:min-h-[90vh] flex items-center justify-center pb-8 md:pb-16"
         aria-label="Introduction"
       >
         {/* Background Decorative Layer - Enhanced for both modes */}
@@ -247,7 +247,7 @@ export function HomePage() {
 
         <div className="relative z-10 w-full">
           <motion.div
-            className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 md:gap-16 lg:gap-24 items-center"
+            className="grid lg:grid-cols-[1.1fr_0.9fr] gap-8 md:gap-16 lg:gap-24 items-center"
           >
             {/* Left Content - Improved Mobile Layout */}
             <div className="relative order-1 lg:order-1 text-center lg:text-left">
@@ -410,9 +410,9 @@ export function HomePage() {
                 ease: [0.16, 1, 0.3, 1],
                 delay: 0.4,
               }}
-              className="relative flex justify-center lg:justify-end order-2 lg:order-2 mb-16 sm:mb-20 lg:mb-0"
+              className="relative flex justify-center lg:justify-end order-2 lg:order-2 mb-12 sm:mb-20 lg:mb-0"
             >
-              <div className="relative w-full max-w-[280px] xs:max-w-sm sm:max-w-md lg:max-w-lg aspect-square lg:aspect-auto lg:w-full lg:max-w-[420px] lg:aspect-square group/hero-right">
+              <div className="relative w-full max-w-[220px] xs:max-w-[260px] sm:max-w-[400px] lg:max-w-[480px] aspect-square lg:aspect-auto lg:w-full lg:max-w-[450px] lg:aspect-square group/hero-right">
                 {/* Advanced Dynamic Gradient System */}
                 <div className="absolute inset-[-15px] xs:inset-[-20px] lg:inset-[-40px] z-0">
                   {/* Primary Glow */}
@@ -473,7 +473,7 @@ export function HomePage() {
                     repeat: Infinity, 
                     ease: "easeInOut" 
                   }}
-                  className="absolute -bottom-4 -left-4 xs:-bottom-6 xs:-left-6 sm:-bottom-8 sm:-left-8 z-30 group/rocket"
+                  className="absolute -bottom-2 -left-2 xs:-bottom-6 xs:-left-6 sm:-bottom-8 sm:-left-8 z-30 group/rocket"
                 >
                   <div className="relative w-16 h-16 xs:w-20 xs:h-20 sm:w-24 sm:h-24 flex items-center justify-center">
                     {/* Moving Transparent Circle Background */}
@@ -520,34 +520,6 @@ export function HomePage() {
                   </div>
                 </motion.div>
               </div>
-
-              {/* Compact Dynamic Stats */}
-              <div className="absolute -right-16 top-1/2 -translate-y-1/2 hidden 2xl:flex flex-col gap-4">
-                {stats.map((stat, i) => (
-                  <motion.div
-                    key={stat.label}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 1.2 + i * 0.1 }}
-                    whileHover={{ x: -8, scale: 1.05 }}
-                    className="glass px-5 py-3 rounded-xl flex items-center gap-4 min-w-[180px] border-white/10 shadow-lg group"
-                  >
-                    <div
-                      className={`w-9 h-9 rounded-lg ${stat.bg} flex items-center justify-center group-hover:rotate-6 transition-transform`}
-                    >
-                      <stat.icon className={`w-4.5 h-4.5 ${stat.color}`} />
-                    </div>
-                    <div>
-                      <div className="text-base font-black leading-none mb-0.5 tracking-tighter">
-                        {stat.value}
-                      </div>
-                      <div className="text-[7px] font-black uppercase tracking-widest text-muted-foreground/40">
-                        {stat.label}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
             </motion.div>
           </motion.div>
         </div>
@@ -589,7 +561,7 @@ export function HomePage() {
                 Industrial Features
               </div>
             </motion.div>
-            <h2 className="text-4xl md:text-6xl font-black mb-6 font-heading tracking-tighter text-foreground">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-6 font-heading tracking-tighter text-foreground">
               Engineering <span className="text-gradient">Excellence</span>
             </h2>
             <p className="responsive-text-body text-muted-foreground dark:text-muted-foreground/70 max-w-3xl mx-auto font-medium leading-relaxed">
@@ -637,7 +609,7 @@ export function HomePage() {
       >
         <div className="">
           <header className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-5xl font-black mb-4 font-heading tracking-tighter text-foreground">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-4 font-heading tracking-tighter text-foreground">
               The <span className="text-gradient">Tech</span> Core
             </h2>
             <p className="responsive-text-body text-muted-foreground dark:text-muted-foreground/70 max-w-2xl mx-auto font-medium leading-relaxed">
@@ -670,13 +642,13 @@ export function HomePage() {
 
       <section
         id="projects"
-        className="responsive-section"
+        className="responsive-section -mt-8"
         aria-label="Portfolio Projects"
       >
         <div className="">
           <header className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 md:mb-24 gap-12">
             <div className="max-w-3xl">
-              <h2 className="text-4xl md:text-7xl font-black mb-6 font-heading tracking-tighter leading-none text-foreground">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black mb-6 font-heading tracking-tighter leading-none text-foreground">
                 Featured <br /> <span className="text-gradient">Creations</span>
               </h2>
               <p className="responsive-text-body text-muted-foreground dark:text-muted-foreground/70 font-medium leading-relaxed">
@@ -695,14 +667,14 @@ export function HomePage() {
             </Link>
           </header>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-8 lg:gap-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6 lg:gap-8">
             {featuredProjects.map((project: any, index: number) => (
               <article key={project?.id || index} className="group h-full perspective-1000">
-                <Card className="relative overflow-hidden border-primary/5 dark:border-white/5 shadow-2xl transition-all duration-700 bg-white/80 dark:bg-card/30 backdrop-blur-3xl rounded-[2rem] lg:rounded-[2.5rem] h-full flex flex-col hover:shadow-primary/20 hover:-translate-y-2">
+                <Card className="relative overflow-hidden border-primary/5 dark:border-white/5 shadow-2xl transition-all duration-700 bg-white/80 dark:bg-card/30 backdrop-blur-3xl rounded-[1.5rem] lg:rounded-[2rem] h-full flex flex-col hover:shadow-primary/20 hover:-translate-y-2">
                   {/* Decorative Background Glow */}
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/10 blur-[60px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                   
-                  <div className="aspect-video overflow-hidden relative isolation-isolate rounded-t-[inherit]">
+                  <div className="aspect-[16/10] overflow-hidden relative isolation-isolate rounded-t-[inherit]">
                     <ImageWithFallback
                       src={project?.image || ""}
                       alt={project?.title || "Project case study"}
@@ -725,63 +697,63 @@ export function HomePage() {
                       </motion.a>
                     </div>
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-60 group-hover:opacity-80 transition-all duration-700 flex items-end p-6 lg:p-8">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-60 group-hover:opacity-80 transition-all duration-700 flex items-end p-4 lg:p-6">
                       <div className="text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-700">
-                        <Badge className="bg-primary/20 backdrop-blur-xl border-primary/30 text-white font-bold px-3 py-1 rounded-lg mb-3 uppercase tracking-[0.2em] text-[8px]">
+                        <Badge className="bg-primary/20 backdrop-blur-xl border-primary/30 text-white font-bold px-2 py-0.5 rounded-lg mb-2 uppercase tracking-[0.2em] text-[7px]">
                           {project?.category || "Industrial"}
                         </Badge>
-                        <h3 className="text-xl lg:text-3xl font-black tracking-tighter leading-tight">
+                        <h3 className="text-lg lg:text-xl xl:text-2xl font-black tracking-tighter leading-tight">
                           {project?.title}
                         </h3>
                       </div>
                     </div>
                   </div>
 
-                  <CardContent className="p-8 lg:p-10 flex-grow flex flex-col">
-                    <p className="responsive-text-body text-muted-foreground dark:text-muted-foreground/80 mb-6 lg:mb-8 leading-relaxed font-medium">
+                  <CardContent className="p-5 lg:p-6 flex-grow flex flex-col">
+                    <p className="text-sm lg:text-base text-muted-foreground dark:text-muted-foreground/80 mb-4 leading-relaxed font-medium line-clamp-2">
                       {project?.description ||
                         "High-performance technical solution built with precision and modern best practices."}
                     </p>
 
-                    <div className="flex flex-wrap gap-2 mb-8">
+                    <div className="flex flex-wrap gap-1.5 mb-4">
                       {(Array.isArray(project?.technologies) ? project.technologies : [])
-                        .slice(0, 4)
+                        .slice(0, 3)
                         .map((tech: string) => (
                           <span
                             key={tech}
-                            className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg bg-primary/5 text-primary/70 border border-primary/10 group-hover:border-primary/30 group-hover:bg-primary/10 transition-all duration-500"
+                            className="text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md bg-primary/5 text-primary/70 border border-primary/10 group-hover:border-primary/30 group-hover:bg-primary/10 transition-all duration-500"
                           >
                             {tech}
                           </span>
                         ))}
                     </div>
 
-                    <div className="mt-auto pt-6 border-t border-primary/5 dark:border-white/10 flex items-center justify-between">
+                    <div className="mt-auto pt-4 border-t border-primary/5 dark:border-white/10 flex items-center justify-between">
                       <Link
                         to={`/projects/${project?.id}`}
-                        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:gap-3 transition-all duration-300 touch-target focus-ring"
+                        className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-primary hover:gap-3 transition-all duration-300 touch-target focus-ring"
                       >
-                        Deep Dive <ArrowRight className="w-3.5 h-3.5" />
+                        Deep Dive <ArrowRight className="w-3 h-3" />
                       </Link>
 
-                      <div className="flex gap-3">
+                      <div className="flex gap-2">
                         <a
                           href={project?.github_url || "#"}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 rounded-lg bg-muted/50 text-muted-foreground hover:bg-primary hover:text-white transition-all duration-500 touch-target focus-ring"
+                          className="p-1.5 rounded-md bg-muted/50 text-muted-foreground hover:bg-primary hover:text-white transition-all duration-500 touch-target focus-ring"
                           title="View Source"
                         >
-                          <Code className="w-4 h-4" />
+                          <Code className="w-3.5 h-3.5" />
                         </a>
                         <a
                           href={project?.live_url || "#"}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-500 touch-target focus-ring"
+                          className="p-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-500 touch-target focus-ring"
                           title="View Live"
                         >
-                          <ExternalLink className="w-4 h-4" />
+                          <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                       </div>
                     </div>
@@ -800,7 +772,7 @@ export function HomePage() {
       >
         <div className="">
           <header className="text-center mb-16 md:mb-24">
-            <h2 className="text-4xl md:text-6xl font-black mb-6 font-heading tracking-tighter text-foreground">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-6 font-heading tracking-tighter text-foreground">
               Latest <span className="text-gradient">Insights</span>
             </h2>
             <p className="responsive-text-body text-muted-foreground dark:text-muted-foreground/70 max-w-2xl mx-auto font-medium leading-relaxed">

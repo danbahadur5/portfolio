@@ -292,7 +292,7 @@ export function ContactPage() {
                               placeholder="e.g. John Doe"
                               aria-invalid={errors.name ? "true" : "false"}
                               aria-describedby={errors.name ? "name-error" : undefined}
-                              className={`h-10 rounded-xl border-none bg-muted/50 px-4 font-sans text-sm transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 ${errors.name ? "ring-2 ring-destructive/20" : ""}`}
+                              className={`h-10 rounded-xl border-none bg-muted/50 px-4 font-sans text-sm transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 placeholder:text-foreground/60 ${errors.name ? "ring-2 ring-destructive/20" : ""}`}
                             />
                             {errors.name && (
                               <p 
@@ -323,7 +323,7 @@ export function ContactPage() {
                               placeholder="e.g. john@example.com"
                               aria-invalid={errors.email ? "true" : "false"}
                               aria-describedby={errors.email ? "email-error" : undefined}
-                              className={`h-10 rounded-xl border-none bg-muted/50 px-4 font-sans text-sm transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 ${errors.email ? "ring-2 ring-destructive/20" : ""}`}
+                              className={`h-10 rounded-xl border-none bg-muted/50 px-4 font-sans text-sm transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 placeholder:text-foreground/60 ${errors.email ? "ring-2 ring-destructive/20" : ""}`}
                             />
                             {errors.email && (
                               <p 
@@ -355,7 +355,7 @@ export function ContactPage() {
                             placeholder="What can I help you with?"
                             aria-invalid={errors.subject ? "true" : "false"}
                             aria-describedby={errors.subject ? "subject-error" : undefined}
-                            className={`h-10 rounded-xl border-none bg-muted/50 px-4 font-sans text-sm transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 ${errors.subject ? "ring-2 ring-destructive/20" : ""}`}
+                            className={`h-10 rounded-xl border-none bg-muted/50 px-4 font-sans text-sm transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 placeholder:text-foreground/60 ${errors.subject ? "ring-2 ring-destructive/20" : ""}`}
                           />
                           {errors.subject && (
                             <p 
@@ -380,7 +380,7 @@ export function ContactPage() {
                                 id="budget"
                                 {...register("budget")}
                                 aria-label="Select budget range"
-                                className="w-full h-10 rounded-xl border-none bg-muted/50 px-4 font-sans text-sm appearance-none cursor-pointer transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 outline-none"
+                                className="w-full h-10 rounded-xl border-none bg-muted/50 px-4 font-sans text-sm appearance-none cursor-pointer transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 outline-none text-foreground/60"
                               >
                                 <option value="">Select budget range</option>
                                 {budgetRanges.map((range) => (
@@ -406,7 +406,7 @@ export function ContactPage() {
                                 id="timeline"
                                 {...register("timeline")}
                                 aria-label="Select timeline"
-                                className="w-full h-10 rounded-xl border-none bg-muted/50 px-4 font-sans text-sm appearance-none cursor-pointer transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 outline-none"
+                                className="w-full h-10 rounded-xl border-none bg-muted/50 px-4 font-sans text-sm appearance-none cursor-pointer transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 outline-none text-foreground/60"
                               >
                                 <option value="">Select timeline</option>
                                 {timelines.map((timeline) => (
@@ -441,7 +441,7 @@ export function ContactPage() {
                             placeholder="Describe your vision, goals, and any specific requirements..."
                             aria-invalid={errors.message ? "true" : "false"}
                             aria-describedby={errors.message ? "message-error" : undefined}
-                            className={`min-h-[120px] rounded-xl border-none bg-muted/50 p-4 font-sans text-sm leading-relaxed transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 ${
+                            className={`min-h-[120px] rounded-xl border-none bg-muted/50 p-4 font-sans text-sm leading-relaxed transition-all focus:bg-background focus:ring-2 focus:ring-primary/20 placeholder:text-foreground/60 ${
                               errors.message ? "ring-2 ring-destructive/20" : ""
                             }`}
                           />
