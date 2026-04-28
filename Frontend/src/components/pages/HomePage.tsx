@@ -311,13 +311,13 @@ export function HomePage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8, duration: 0.5 }}
-                  className="flex flex-row items-center gap-2 md:gap-2 mb-8 md:mb-12"
+                  className="flex flex-row items-center justify-center sm:justify-start gap-2 md:gap-2 mb-8 md:mb-12"
                 >
                   <Button
                     size="lg"
                     onClick={handleHireClick}
                     disabled={isHiring || hired}
-                    className={`relative overflow-hidden sm:flex-initial h-11 md:h-14 px-6 md:px-12 rounded-xl md:rounded-2xl text-sm md:text-lg font-bold tracking-tight shadow-xl transition-all duration-300 group cursor-pointer ${
+                    className={`relative overflow-hidden flex-1 sm:flex sm:flex-initial h-11 md:h-14 px-6 md:px-12 rounded-xl md:rounded-2xl text-sm md:text-lg font-bold tracking-tight shadow-xl transition-all duration-300 group cursor-pointer ${
                       hired 
                         ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20" 
                         : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30"
@@ -351,7 +351,7 @@ export function HomePage() {
                   
                   <Link
                     to="/projects"
-                    className="group flex items-center justify-center gap-2 md:gap-3 text-sm md:text-lg font-bold tracking-tight text-foreground/70 hover:text-primary transition-all duration-300 cursor-pointer  rounded-xl md:rounded-2xl py-2.5 md:py-4 px-4 md:px-8 touch-target"
+                    className="group flex flex-1 sm:flex-initial items-center justify-center gap-2 md:gap-3 text-sm md:text-lg font-bold tracking-tight text-foreground/70 hover:text-primary transition-all duration-300 cursor-pointer  rounded-xl md:rounded-2xl py-2.5 md:py-4 px-4 md:px-8 touch-target"
                   >
                     <div className="w-8 h-8 md:w-12 md:h-12 rounded-full border-2 border-primary/10 flex items-center justify-center group-hover:border-primary group-hover:bg-primary/5 transition-all duration-300 group-hover:scale-110 ">
                       <MousePointer2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
@@ -365,7 +365,7 @@ export function HomePage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1, duration: 0.5 }}
-                  className="flex flex-row items-center gap-2 md:gap-2 pt-2 md:pt-4 border-t border-primary/5 dark:border-white/5"
+                  className="flex flex-row items-center justify-center sm:justify-start gap-2 md:gap-2 pt-2 md:pt-4 border-t border-primary/5 dark:border-white/5"
                 >
                   <div className="flex items-center gap-2 md:gap-3 group cursor-default flex-shrink-0">
                     <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl md:rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center group-hover:bg-primary/10 transition-colors touch-target">
